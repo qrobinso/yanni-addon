@@ -36,6 +36,7 @@ let chosen = names.isEmpty ? all : names.map { n in
     let rec = record(sc)
     let json = dir.appendingPathComponent("\(sc.name).json")
     let gz = dir.appendingPathComponent("\(sc.name).json.gz")
+    try? FileManager.default.createDirectory(at: json.deletingLastPathComponent(), withIntermediateDirectories: true)
     try? FileManager.default.removeItem(at: json)
     try? FileManager.default.removeItem(at: gz)
     try! Data(rec.text.utf8).write(to: json)
@@ -54,7 +55,7 @@ let chosen = names.isEmpty ? all : names.map { n in
         if let k = sc.until, !rec.seen.contains(k) { note = "  WARNING: \(k.rawValue) never became active" }
         print("\(file.lastPathComponent)  frames \(rec.frameCount)  \(size) bytes\(note)")
     }
-    return file.lastPathComponent
+    return String(file.path.dropFirst(dir.path.count + 1))  // relative to dir (emotion/… lives in a subfolder)
 }
 
 @MainActor func writeLayout(into dir: URL) {

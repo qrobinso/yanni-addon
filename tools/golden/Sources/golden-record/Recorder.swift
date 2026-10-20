@@ -18,6 +18,8 @@ struct Scenario {
     /// Stop `tail` frames after this kind, once seen active, is no longer active.
     var until: OneShotKind?
     var tail: Int = 60
+    /// Records the scenario itself instead of the engine loop (emotion scenarios).
+    var custom: (@MainActor (Scenario) -> Recording)? = nil
 }
 
 /// Simulated clock for the life-cycle controller: seconds of engine time.
@@ -42,6 +44,7 @@ struct Recording {
 }
 
 @MainActor func record(_ sc: Scenario) -> Recording {
+    if let custom = sc.custom { return custom(sc) }
     let engine = FaceEngine(seed: sc.seed, modifiers: modifierStack(sc.modifiers))
     let clock = SimClock()
     var life: LifeCycleController?
