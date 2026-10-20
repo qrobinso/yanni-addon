@@ -4,3 +4,11 @@ dist/
 .swiftpm/
 *.log
 .DS_Store
+server/dist-bundle/
+
+# Turn-detection models and the onnxruntime-web runtime (web/scripts/fetch-models.mjs)
+web/public/models/
+web/public/ort/
+
+# Render parity outputs (web/test/render/parity/run.mjs)
+web/test/render/parity/out/
