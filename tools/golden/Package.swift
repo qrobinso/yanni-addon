@@ -15,5 +15,10 @@ let package = Package(
             // Only for EdgeGeometry.fitting (the app's own edge geometry); the result goes into the script as numbers.
             .product(name: "FaceRendering", package: "YanniFace"),
         ]),
+        // Reference PNGs + uniforms from the real Metal renderer, for the WebGPU port's parity test (fixtures/render).
+        .executableTarget(name: "golden-render", dependencies: [
+            .product(name: "FaceModel", package: "YanniFace"),
+            .product(name: "FaceRendering", package: "YanniFace"),
+        ]),
     ]
 )

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yanni render demo</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; color: #ddd; font: 13px system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  #panel { position: fixed; top: 8px; left: 8px; background: rgba(20, 20, 20, 0.85); padding: 8px 10px; border-radius: 8px;
+    display: grid; grid-template-columns: auto 160px; gap: 4px 8px; align-items: center; }
+  #err { position: fixed; bottom: 8px; left: 8px; color: #f88; }
+</style>
+</head>
+<body>
+<canvas id="face"></canvas>
+<div id="panel"></div>
+<div id="err"></div>
+<script type="module" src="/src/render/demo.ts"></script>
+</body>
+</html>
