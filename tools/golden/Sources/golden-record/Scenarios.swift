@@ -23,6 +23,36 @@ private func send(_ sec: Double, _ c: String, _ fields: [(String, J)] = []) -> I
 @MainActor func allScenarios() -> [Scenario] {
     var list: [Scenario] = []
 
+    // Engine-core stress: overlapping one-shots, conflicts, evictions, retriggers at the cooldown, state releases.
+    list.append(Scenario(name: "core-mix", modifiers: "core", frames: fr(12), inputs: [
+        send(0.5, "playOneShot", [("kind", Arg.kind(.laugh))]),
+        send(0.8, "playOneShot", [("kind", Arg.kind(.dance))]),
+        send(1.0, "playOneShot", [("kind", Arg.kind(.sorryBlink))]),
+        send(1.2, "playOneShot", [("kind", Arg.kind(.lookAway))]),
+        send(1.25, "playOneShot", [("kind", Arg.kind(.crossEyed))]),
+        send(2.0, "playOneShot", [("kind", Arg.kind(.dance))]),
+        send(2.1, "playOneShot", [("kind", Arg.kind(.curiousTilt))]),
+        at(2.5, "setAgentState", [Arg.state(.listening)]),
+        send(3.0, "playOneShot", [("kind", Arg.kind(.perkUp))]),
+        send(3.2, "playOneShot", [("kind", Arg.kind(.perkUp))]),
+        send(3.6, "playOneShot", [("kind", Arg.kind(.perkUp))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.bigSurprise))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.sideEye))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.yawn))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.mockOffense))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.doubleTake))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.catchSelf))]),
+        send(4.0, "playOneShot", [("kind", Arg.kind(.stretch))]),
+        at(5.0, "setAgentState", [Arg.state(.idle)]),
+        send(6, "playOneShot", [("kind", Arg.kind(.nodOff))]),
+        at(6.5, "setAgentState", [Arg.state(.drowsy)]),
+        send(7, "playOneShot", [("kind", Arg.kind(.wake))]),
+        send(7.3, "playOneShot", [("kind", Arg.kind(.delightedSquint))]),
+        at(8, "setMood", [Arg.mood(0.5, 0.5, 0.2)]),
+        send(8.5, "playOneShot", [("kind", Arg.kind(.confusedShake))]),
+        at(8.6, "noteFriendlyTouch", [.d(9.0)]),
+        send(9, "playOneShot", [("kind", Arg.kind(.laugh))]),
+    ]))
     // Engine-core parity gate: only the one-shot sampler and apply, nothing playing.
     list.append(Scenario(name: "rest-core", modifiers: "core", frames: fr(5)))
     list.append(Scenario(name: "rest-default", frames: fr(10)))
@@ -147,5 +177,29 @@ private func send(_ sec: Double, _ c: String, _ fields: [(String, J)] = []) -> I
         at(1, "life.forceSleep", [.null]),
         at(12, "life.forceWake"),
     ]))
+    // Per-package parity gates: the same scripts on modifier subsets, so each port package has scenarios that can
+    // turn green before the whole default stack exists (`subset:` lists names; the stack keeps makeDefaultModifiers
+    // order). core-oneshot-*: the one-shot curves alone.
+    func variant(_ base: String, _ prefix: String, _ mods: String, seconds: Double? = nil) {
+        guard var v = list.first(where: { $0.name == base }) else { fatalError("no scenario \(base)") }
+        v.name = prefix + base
+        v.modifiers = mods
+        if let seconds { v.frames = fr(seconds) }
+        list.append(v)
+    }
+    func subset(_ names: [String]) -> String { "subset:" + names.joined(separator: ",") }
+    let wp5 = subset(["AgentStateBehavior", "OneShotSampler", "ExpressiveOverlay", "MoodModulation", "ExpressionTransition",
+                      "Attention", "NoticingAttention", "ThinkingBeats", "GazeTracking", "Pupils", "MicroMotion",
+                      "OneShotApply"])
+    let wp6 = subset(["IdleBeats", "EdgeAntics", "IdleGames", "PupilReactions", "OneShotSampler", "OneShotApply"])
+    let wp7 = subset(["TouchReactions", "OneShotSampler", "Breathing", "OneShotApply", "VocalSync", "SquashStretch",
+                      "Blink", "LidHeaviness", "BurnInDrift", "Brows", "MoodColor", "Brightness", "CaptionInset"])
+    for k in OneShotKind.allCases { variant("oneshot-\(k.rawValue)", "core-", "core") }
+    variant("pupil-shapes", "core-", "core")
+    for n in ["states-tour", "noticing-3min", "mood-sweep"] { variant(n, "wp5-", wp5) }
+    variant("idle-10min", "wp5-", wp5, seconds: 120)
+    variant("idle-10min", "wp6-", wp6, seconds: 300)
+    for n in ["glow-caption", "mood-sweep", "touch", "states-tour"] { variant(n, "wp7-", wp7) }
+    variant("idle-10min", "wp7-", wp7, seconds: 120)
     return list
 }

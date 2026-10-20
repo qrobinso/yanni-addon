@@ -7,7 +7,8 @@ struct Scenario {
     var name: String
     var dt: Double = 1.0 / 60.0
     var seed: UInt64 = 0x59414E4E49
-    /// "default" (FaceEngine.makeDefaultModifiers()) or "core" (OneShotSampler + OneShotApply only).
+    /// "default" (FaceEngine.makeDefaultModifiers()), "core" (OneShotSampler + OneShotApply only) or
+    /// "subset:A,B,…" (those of makeDefaultModifiers, in its order).
     var modifiers: String = "default"
     /// Drive a LifeCycleController (FaceLife) after every tick, on a simulated clock.
     var life: Bool = false
@@ -41,8 +42,7 @@ struct Recording {
 }
 
 @MainActor func record(_ sc: Scenario) -> Recording {
-    let engine = FaceEngine(seed: sc.seed,
-                            modifiers: sc.modifiers == "core" ? [OneShotSampler(), OneShotApply()] : nil)
+    let engine = FaceEngine(seed: sc.seed, modifiers: modifierStack(sc.modifiers))
     let clock = SimClock()
     var life: LifeCycleController?
     if sc.life {
@@ -139,4 +139,14 @@ struct Recording {
     out += "["
     for (i, v) in a.enumerated() { if i > 0 { out += "," }; num7(v, to: &out) }
     out += "]"
+}
+
+/// The modifier stack a scenario's `modifiers` names (nil: the engine's default stack).
+@MainActor func modifierStack(_ spec: String) -> [any Modifier]? {
+    if spec == "core" { return [OneShotSampler(), OneShotApply()] }
+    guard spec.hasPrefix("subset:") else { return nil }
+    let names = Set(spec.dropFirst("subset:".count).split(separator: ",").map(String.init))
+    let stack = FaceEngine.makeDefaultModifiers().filter { names.contains($0.name) }
+    precondition(stack.count == names.count, "unknown modifier in \(spec)")
+    return stack
 }
