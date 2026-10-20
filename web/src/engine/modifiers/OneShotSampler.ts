@@ -249,7 +249,8 @@ export class OneShotSampler implements Modifier {
       }
       const sl = slots[i];
       if (sl.fresh) sl.fresh = false;
-      else sl.playhead += dt * speed;
+      // f32: the Swift playhead is a Float; fast curves (the yo-yo's yank) show the f64 drift (golden core-oneshot-yoYo).
+      else sl.playhead = Math.fround(sl.playhead + Math.fround(dt * speed));
       if (sl.fading) sl.fadeRemaining -= dt;
       const finished = sl.playhead >= sl.duration;
       if (finished || (sl.fading && sl.fadeRemaining <= 0)) {
@@ -385,7 +386,9 @@ export class OneShotSampler implements Modifier {
     if (sl.fresh) {
       sl.fresh = false;
     } else {
-      if (!sl.stalled) sl.playhead += dt * speed;
+      // f32: a transformation's duration is an exact multiple of the frame time (stars 1.7 s, exclamation marks 2 s, no
+      // jitter), so its last frame hangs on the Float playhead's rounding (golden core-oneshot-starEyes, exclaimEyes).
+      if (!sl.stalled) sl.playhead = Math.fround(sl.playhead + Math.fround(dt * speed));
       sl.age += dt;
     }
     if (sl.switching) {

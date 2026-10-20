@@ -1,4 +1,10 @@
 // Port of Tests/FaceEngineTests/ComposerTests.swift.
+import { Blink } from '../../src/engine/modifiers/Blink';
+import { Breathing } from '../../src/engine/modifiers/Breathing';
+import { Brightness } from '../../src/engine/modifiers/Brightness';
+import { BurnInDrift } from '../../src/engine/modifiers/BurnInDrift';
+import { LidHeaviness } from '../../src/engine/modifiers/LidHeaviness';
+import { SquashStretch } from '../../src/engine/modifiers/SquashStretch';
 import { describe, expect, test } from 'vitest';
 import { Composer, Director, FaceState, LidMath, type Modifier, type Phase } from '../../src/engine';
 import { ExpressionLibrary, ExpressionMix, FacePose, ParamLayout, type Side } from '../../src/model';
@@ -9,45 +15,9 @@ import type { V4 } from '../../src/core/vec';
 const library = ExpressionLibrary.bundled();
 const pose = (name: string): FacePose => library.get(name)!.pose;
 
-/// A modifier that runs an arbitrary closure (test input injection).
-export class LidsProbe implements Modifier {
-  isEnabled = true;
-  constructor(readonly name: string, readonly phase: Phase, private readonly body: (s: FaceState) => void) {}
-  update(s: FaceState): void { this.body(s); }
-}
+import { LidsHarness, LidsProbe, opening, visibleOpening } from './harness';
+export { LidsHarness, LidsProbe, opening, visibleOpening };
 
-/// Drives a director + composer at a fixed frame rate, like `FaceEngine.tick`.
-export class LidsHarness {
-  s: FaceState;
-  readonly director: Director;
-  frameIndex = 0;
-  constructor(modifiers: Modifier[], readonly fps = 60, seed = 1, readonly startTime = 0) {
-    this.s = new FaceState(library, seed);
-    this.s.time = startTime;
-    this.director = new Director(modifiers);
-  }
-  get dt(): number { return 1 / this.fps; }
-  get elapsed(): number { return this.s.time - this.startTime; }
-  step(): void {
-    this.frameIndex += 1;
-    this.s.dt = this.dt;
-    this.s.time = this.startTime + this.frameIndex / this.fps;
-    this.s.frame += 1;
-    this.director.run(this.s);
-    Composer.compose(this.s);
-    this.s.commands.length = 0;
-  }
-  run(seconds: number, each: (h: LidsHarness) => void = () => {}): void {
-    const n = Math.round(seconds * this.fps);
-    for (let i = 0; i < n; i++) { this.step(); each(this); }
-  }
-}
-
-/// Visible opening of an eye as a fraction of the unscaled eye height.
-export const visibleOpening = (p: FacePose, side: Side): number =>
-  Math.max(1 - p.eye(side, 'upperLidY') - p.eye(side, 'lowerLidY'), 0) * p.eye(side, 'scaleY');
-
-export const opening = (p: FacePose, side: Side): number => 1 - p.eye(side, 'upperLidY') - p.eye(side, 'lowerLidY');
 
 const v4 = (x: number, y: number, z: number, w: number): V4 => ({ x, y, z, w });
 
@@ -268,11 +238,10 @@ describe('Composer', () => {
     x += 1; expect(frame(x, 0.5)).toBe(true);
   });
 
-  // needs WP7 (Breathing, SquashStretch, Blink, LidHeaviness, BurnInDrift, Brightness)
-  test.skip.each([0.0, 1_000_000.0])('fullLidsAndBodyStackIsFrameRateIndependent(%d)', (start) => {
+  test.each([0.0, 1_000_000.0])('fullLidsAndBodyStackIsFrameRateIndependent(%d)', (start) => {
     const make = (fps: number): LidsHarness => {
       const mods: Modifier[] = [
-        // TODO(WP7): new Breathing(), new SquashStretch(), new Blink(), new LidHeaviness(), new BurnInDrift(), new Brightness(),
+        new Breathing(), new SquashStretch(), new Blink(), new LidHeaviness(), new BurnInDrift(), new Brightness(),
       ];
       const h = new LidsHarness(mods, fps, 99, start);
       h.s.modulation.lidHeaviness = 0.2;

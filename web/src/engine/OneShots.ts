@@ -392,7 +392,8 @@ export const OneShotLibrary = {
 
   /// Instance duration in seconds at speed 1 for the given trigger params.
   duration(kind: OneShotKind, p: OneShotParams): number {
-    return OneShotLibrary.baseDuration(kind, p) * p.timeMul;
+    // f32: compared against the Float playhead on a one-shot's last frame (OneShotSampler).
+    return Math.fround(Math.fround(OneShotLibrary.baseDuration(kind, p)) * Math.fround(p.timeMul));
   },
 
   /// Accent offsets (base seconds) for this trigger: the spec's, or the edge antic's own.
@@ -470,7 +471,8 @@ export const OneShotLibrary = {
     const L = OneShotLibrary;
     const base = L.baseDuration(kind, p);
     // At or past the instance duration, exactly the end (no rounding short of the edge window's zero).
-    const tb = t >= base * p.timeMul ? base : Math.min(Math.max(t / Math.max(p.timeMul, 0.01), 0), base);
+    // f32: `base * timeMul` is the Float instance duration (`duration`), the playhead's end mark.
+    const tb = t >= L.duration(kind, p) ? base : Math.min(Math.max(t / Math.max(p.timeMul, 0.01), 0), base);
     const raw = new OneShotOutput();
     switch (kind) {
       case 'laugh': laugh(tb, p, raw); break;
@@ -804,9 +806,9 @@ function wake(t: number, p: OneShotParams, o: OneShotOutput): void {
 
 // MARK: - delightedSquint (1.0 s): tiny dip, then a happy hop with lower lids springing up into a squint.
 
-const squintLower = new Track([[0, 0], [0.05, -0.05], [0.16, 0.5], [0.24, 0.42], [0.7, 0.45], [1.0, 0]]);
-const squintY = new Track([[0, 0], [0.06, 0.3], [0.18, -1.1], [0.32, 0.25], [0.42, -0.15], [0.55, 0], [1.0, 0]]);
-const squintScale = new Track([[0, 0], [0.06, -0.02], [0.17, 0.045], [0.3, -0.02], [0.42, 0.01], [0.6, 0], [1.0, 0]]);
+export const squintLower = new Track([[0, 0], [0.05, -0.05], [0.16, 0.5], [0.24, 0.42], [0.7, 0.45], [1.0, 0]]);
+export const squintY = new Track([[0, 0], [0.06, 0.3], [0.18, -1.1], [0.32, 0.25], [0.42, -0.15], [0.55, 0], [1.0, 0]]);
+export const squintScale = new Track([[0, 0], [0.06, -0.02], [0.17, 0.045], [0.3, -0.02], [0.42, 0.01], [0.6, 0], [1.0, 0]]);
 
 function delightedSquint(t: number, p: OneShotParams, o: OneShotOutput): void {
   const lower = squintLower.value(t) * (0.9 + 0.2 * p.v1);

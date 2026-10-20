@@ -1,4 +1,5 @@
 // Port of Tests/FaceEngineTests/SyllableOnsetTests.swift.
+import { VocalRig } from './VocalRig';
 import { describe, expect, test } from 'vitest';
 import { SplitMix64 } from '../../src/core/random';
 import { VocalContour } from '../../src/model';
@@ -110,18 +111,6 @@ describe('SyllableOnset', () => {
   });
 });
 
-// TODO(WP7): VocalRig lives with the VocalSync tests; this stand-in keeps the bodies typechecking.
-interface VocalSyncView { activations: number; hopCount: number }
-class VocalRig {
-  readonly vs: VocalSyncView = { activations: 0, hopCount: 0 }; // TODO(WP7): new VocalSync()
-  readonly engine = new FaceEngine({ modifiers: [] /* TODO(WP7): [this.vs] */ });
-  host = 5000;
-  constructor(readonly fps = 60) { this.frame(); }
-  get dt(): number { return 1 / this.fps; }
-  frame(): void { this.host += this.dt; this.engine.tick(this.dt, this.host); }
-  get faceYCanvas(): number { return 0; } // TODO(WP7): VocalRig.faceYCanvas
-}
-
 /// The Spoken voice's syllable cues go through VocalSync exactly like the babble's notes.
 describe('TalkingBounce', () => {
   /// Feeds a synthetic sentence through the detector into VocalSync, frame by frame, as the controller does
@@ -145,8 +134,7 @@ describe('TalkingBounce', () => {
   }
   const maxAbs = (a: number[]): number => Math.max(...a.map(Math.abs));
 
-  // needs WP7 (VocalSync)
-  test.skip('spokenSyllablesBounceTheFaceAndSettleInPauses', () => {
+  test('spokenSyllablesBounceTheFaceAndSettleInPauses', () => {
     const rig = new VocalRig();
     const sp = new SyntheticSpeech();
     sp.word(0, 6, 5, 0.65, 3);
@@ -159,8 +147,7 @@ describe('TalkingBounce', () => {
     expect(Math.abs(ys[ys.length - 1])).toBeLessThan(0.05);
   });
 
-  // needs WP7 (VocalSync)
-  test.skip('spokenAndBabbleCuesMoveTheFaceTheSame', () => {
+  test('spokenAndBabbleCuesMoveTheFaceTheSame', () => {
     // The same note train as babble cues (hand-made) and as detected syllables: same hop count, similar travel.
     const a = new VocalRig(), b = new VocalRig();
     const sp = new SyntheticSpeech();
@@ -180,8 +167,7 @@ describe('TalkingBounce', () => {
     expect(Math.abs(pa - pb), `spoken ${pa} vs babble ${pb}`).toBeLessThan(0.5 * pb);
   });
 
-  // needs WP7 (VocalSync)
-  test.skip('answerNodDucksTheBounce', () => {
+  test('answerNodDucksTheBounce', () => {
     const free = new VocalRig(), ducked = new VocalRig();
     const sp = new SyntheticSpeech();
     sp.word(0, 5, 4);

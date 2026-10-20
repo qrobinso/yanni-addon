@@ -1,4 +1,6 @@
 // Port of Tests/FaceEngineTests/FaceAffectTests.swift.
+import { MoodColor } from '../../src/engine/modifiers/MoodColor';
+import { LidsHarness } from './harness';
 import { describe, expect, test } from 'vitest';
 import type { V3 } from '../../src/core/vec';
 import { ExpressionLibrary, ExpressionMix, mixEntry } from '../../src/model';
@@ -59,19 +61,17 @@ describe('FaceAffect', () => {
     }
   });
 
-  // needs WP7 (MoodColor)
-  test.skip('moodColorUsesTheSharedFunction', () => {
+  test('moodColorUsesTheSharedFunction', () => {
     for (const mood of moods) {
       for (const o of overrides()) {
-        void mood; void o;
-        // TODO(WP7): const m = new MoodColor();
-        // TODO(WP7): const h = new LidsHarness([m]);   // the harness lives in PowerCare.test.ts
-        // TODO(WP7): h.s.library = ExpressionLibrary.bundled();
-        // TODO(WP7): h.s.mood = { ...mood };
-        // TODO(WP7): h.s.targetMix = ExpressionMix.single('Sadness');
-        // TODO(WP7): h.s.expressionOverride = o;
-        // TODO(WP7): h.step();
-        // TODO(WP7): expect(m.effectivePAD(h.s)).toEqual(FaceAffect.effectivePAD(h.s, m.expressionInfluence));
+        const m = new MoodColor();
+        const h = new LidsHarness([m]);
+        h.s.library = ExpressionLibrary.bundled();
+        h.s.mood = { ...mood };
+        h.s.targetMix = ExpressionMix.single('Sadness');
+        h.s.expressionOverride = o;
+        h.step();
+        expect(m.effectivePAD(h.s)).toEqual(FaceAffect.effectivePAD(h.s, m.expressionInfluence));
       }
     }
   });

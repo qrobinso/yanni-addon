@@ -32,10 +32,8 @@ class LidsHarness {
   }
 }
 
-// TODO(WP7): drop the casts once Brightness is the modifier (level, startupTau).
-type BrightnessModifier = Modifier & { level: number };
-const makeBrightness = (): BrightnessModifier => new Brightness() as unknown as BrightnessModifier;
-const startupTau = (): number => (Brightness as unknown as { startupTau: number }).startupTau;
+const makeBrightness = (): Brightness => new Brightness();
+const startupTau = (): number => Brightness.startupTau;
 
 /// OLED / power care knobs on `Brightness` (hardening design §4.3, §6.4) and the launch fade (§6.2).
 describe('PowerCare', () => {
@@ -46,8 +44,7 @@ describe('PowerCare', () => {
     expect(new FaceEngine().powerCare.equals(p)).toBe(true);
   });
 
-  // needs WP7 (Brightness)
-  test.skip('perDeviceDimLevelAndDelay', () => {
+  test('perDeviceDimLevelAndDelay', () => {
     const b = makeBrightness();
     const h = new LidsHarness([b], 60);
     h.s.agentState = 'idle';
@@ -59,8 +56,7 @@ describe('PowerCare', () => {
     expect(Math.abs(b.level - 0.55)).toBeLessThan(0.01);
   });
 
-  // needs WP7 (Brightness)
-  test.skip('brightnessCeilingIsSmoothed', () => {
+  test('brightnessCeilingIsSmoothed', () => {
     const b = makeBrightness();
     const h = new LidsHarness([b], 60);
     h.s.targetBrightness = 0.8;
@@ -78,8 +74,7 @@ describe('PowerCare', () => {
     expect(v.idleDimLevel === Brightness.idleDimLevel && v.idleDimDelay === 1 && v.brightnessScale === 1).toBe(true);
   });
 
-  // needs WP7 (Brightness)
-  test.skip('launchFadeStartsBlackAndArrives', () => {
+  test('launchFadeStartsBlackAndArrives', () => {
     const b = makeBrightness();
     const h = new LidsHarness([b], 60);
     h.s.targetBrightness = 0.85;

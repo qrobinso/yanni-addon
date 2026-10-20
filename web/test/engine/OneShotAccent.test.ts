@@ -1,20 +1,12 @@
 // Port of Tests/FaceEngineTests/OneShotAccentTests.swift.
-import { curvePorted, specPorted as specWorks } from './ported';
 import { describe, expect, test } from 'vitest';
 import { Canvas } from '../../src/model';
 import {
-  OneShotKind, OneShotLibrary, OneShotParams, isAnswer, isEdgeAntic, isIdleGame, isPupilShape,
+  IdleGames, OneShotKind, OneShotLibrary, OneShotParams, isAnswer, isEdgeAntic, isIdleGame, isPupilShape,
 } from '../../src/engine';
 
-/// Swift `IdleGames.isPending`: every idle game is built in Swift, so this is always false.
-// TODO(WP6): use IdleGames.isPending once the IdleGames modifier is ported.
-const isPending = (_k: OneShotKind): boolean => false;
+const isPending = (k: OneShotKind): boolean => IdleGames.isPending(k);
 
-/// Kinds whose spec works (originals, answers, pupil shapes) and kinds whose curves are ported (the 18 originals).
-const specPorted = OneShotKind.allCases.filter(specWorks);
-const specUnported = OneShotKind.allCases.filter((k) => !specPorted.includes(k));
-const sampled = specPorted.filter(curvePorted);
-const unsampled = OneShotKind.allCases.filter((k) => !sampled.includes(k));
 
 describe('OneShotAccentTests', () => {
   const accentTimesWithinDurationAndSorted = (kind: OneShotKind): void => {
@@ -23,9 +15,7 @@ describe('OneShotAccentTests', () => {
     for (const a of spec.accentTimes) expect(a >= 0 && a <= spec.duration).toBe(true);
     expect(spec.accentTimes).toEqual([...spec.accentTimes].sort((x, y) => x - y));
   };
-  test.each(specPorted)('accentTimesWithinDurationAndSorted %s', accentTimesWithinDurationAndSorted);
-  // needs WP6 (edge antic and idle game specs)
-  test.skip.each(specUnported)('accentTimesWithinDurationAndSorted %s', accentTimesWithinDurationAndSorted);
+  test.each(OneShotKind.allCases)('accentTimesWithinDurationAndSorted %s', accentTimesWithinDurationAndSorted);
 
   /// Each accent sits on a motion peak of the authored curves (a local extremum of some channel within ±20 ms; the
   /// pupil transformations' silhouette scale counts), or — for gaze-driven accents — on a gaze jump.
@@ -66,7 +56,5 @@ describe('OneShotAccentTests', () => {
       expect(found, `${kind} accent ${a} is not on a motion peak`).toBe(true);
     }
   };
-  test.each(sampled)('accentsSitOnMotionPeaks %s', accentsSitOnMotionPeaks);
-  // needs WP6 (answer, edge antic, pupil shape and idle game curves)
-  test.skip.each(unsampled)('accentsSitOnMotionPeaks %s', accentsSitOnMotionPeaks);
+  test.each(OneShotKind.allCases)('accentsSitOnMotionPeaks %s', accentsSitOnMotionPeaks);
 });

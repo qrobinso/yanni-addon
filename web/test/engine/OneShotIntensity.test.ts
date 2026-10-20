@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest';
 import { SplitMix64 } from '../../src/core/random';
 import {
   FaceCommand, FaceEngine, OneShotKind, OneShotLibrary, OneShotRequest, type OneShotParams,
-  isAnswer, isEdgeAntic, isIdleGame, isPupilShape,
+  isAnswer, isEdgeAntic, isIdleGame, isPupilShape, missingModifiers,
 } from '../../src/engine';
 
 /// Every kind whose intensity is an amplitude scale (not an edge antic, a pupil transformation, an answer or a game).
@@ -40,8 +40,7 @@ describe('OneShotIntensity', () => {
   test('edgeAnticsAnswersAndShapesKeepTheirOwnIntensity (answers)', () => {
     for (const k of ['nodYes', 'shakeNoBig'] as OneShotKind[]) keepOwn(k);
   });
-  // needs WP6 (edge antic and pupil shape params)
-  test.skip('edgeAnticsAnswersAndShapesKeepTheirOwnIntensity (edge antics, shapes)', () => {
+  test('edgeAnticsAnswersAndShapesKeepTheirOwnIntensity (edge antics, shapes)', () => {
     for (const k of ['pretendExit', 'sleepySink', 'starEyes', 'pingPong'] as OneShotKind[]) keepOwn(k);
   });
 
@@ -59,8 +58,8 @@ describe('OneShotIntensity', () => {
     expect(Math.abs(maxBig / maxFull - 1.2)).toBeLessThan(1e-3);
   });
 
-  // needs WP5, WP6, WP7 (full default stack; nodYes answer curves)
-  test.skip('softVoiceReachesTheStartedOneShot', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier; nodYes answer curves)
+  test.skipIf(missingModifiers().length > 0)('softVoiceReachesTheStartedOneShot', () => {
     const e = new FaceEngine({ seed: 4 });
     e.tick(1.0 / 60);
     e.send(FaceCommand.play(OneShotRequest.make('nodYes', { softVoice: true })));

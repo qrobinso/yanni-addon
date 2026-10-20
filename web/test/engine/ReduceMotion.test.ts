@@ -1,7 +1,8 @@
 // Port of Tests/FaceEngineTests/ReduceMotionTests.swift.
 import { describe, expect, test } from 'vitest';
-import { FaceEngine, FaceState, OneShotLibrary, OneShotOutput, FaceCommand } from '../../src/engine';
+import { FaceEngine, FaceState, OneShotLibrary, OneShotOutput, FaceCommand, missingModifiers } from '../../src/engine';
 import { ExpressionLibrary, type FacePose } from '../../src/model';
+import { EdgeRig, EdgeTriggerRig } from './EdgeRigs';
 
 /// The engine-wide Reduce Motion factor (hardening design §10): one-shot movement and motion squash-and-stretch × 0.5,
 /// screen-edge antics limited to the curious lean, and the face never still.
@@ -35,8 +36,8 @@ describe('ReduceMotion', () => {
   });
 
   /// The perk-up's scale pop is half as big with Reduce Motion (its lids still snap wide).
-  // needs WP5, WP6, WP7 (full default stack)
-  test.skip('oneShotAmplitudeIsHalved', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier)
+  test.skipIf(missingModifiers().length > 0)('oneShotAmplitudeIsHalved', () => {
     const peak = (reduced: boolean): { scale: number; lids: number } => {
       const engine = new FaceEngine({ seed: 4 });
       const p = engine.pupilReactionSettings;
@@ -59,32 +60,37 @@ describe('ReduceMotion', () => {
     expect(Math.abs(reduced.lids - full.lids)).toBeLessThan(1e-4);
   });
 
-  // needs WP6 (EdgeAntics; EdgeTriggerRig lives in the edge antic tests)
-  test.skip('edgeAnticsAreOnlyTheCuriousLean', () => {
-    // TODO(WP6): const t = new EdgeTriggerRig({ seed: 5, withBeats: false });
-    // TODO(WP6): t.rig.state.pupilSettings.reduceMotion = true;
-    // TODO(WP6): t.run(2 * 3600);
-    // TODO(WP6): expect(t.antics.length).toBeGreaterThanOrEqual(3);
-    // TODO(WP6): expect(t.antics.every((a) => a.kind === 'curiousLean')).toBe(true);
-  });
+  test('edgeAnticsAreOnlyTheCuriousLean', () => {
+    const t = new EdgeTriggerRig({ seed: 5, withBeats: false });
+    t.rig.state.pupilSettings.reduceMotion = true;
+    t.run(2 * 3600);
+    expect(t.antics.length, `${t.antics.length}`).toBeGreaterThanOrEqual(3);
+    expect(t.antics.every((a) => a.kind === 'curiousLean'), `${t.antics.map((a) => a.kind)}`).toBe(true);
+  }, 600_000);
 
-  // needs WP6 (EdgeAntics; EdgeRig lives in the edge antic tests)
-  test.skip('noSleepySinkWithReduceMotion', () => {
+  test('noSleepySinkWithReduceMotion', () => {
     // Control: with the chance at 1 it plays.
-    // TODO(WP6): const control = new EdgeRig({ automatic: true });
-    // TODO(WP6): const cs = control.engine.edgeAnticSettings; cs.sleepySinkChance = 1; control.engine.edgeAnticSettings = cs;
-    // TODO(WP6): control.tick();
-    // TODO(WP6): expect(control.engine.rollSleepySink()).toBe(true);
-    // TODO(WP6): const rig = new EdgeRig({ automatic: true });
-    // TODO(WP6): const p = rig.engine.pupilReactionSettings; p.reduceMotion = true; rig.engine.pupilReactionSettings = p;
-    // TODO(WP6): const st = rig.engine.edgeAnticSettings; st.sleepySinkChance = 1; rig.engine.edgeAnticSettings = st;
-    // TODO(WP6): rig.tick();
-    // TODO(WP6): expect(rig.engine.rollSleepySink()).toBe(false);
+    const control = new EdgeRig({ automatic: true });
+    const cs = control.engine.edgeAnticSettings;
+    cs.sleepySinkChance = 1;
+    control.engine.edgeAnticSettings = cs;
+    control.tick();
+    expect(control.engine.rollSleepySink()).toBe(true);
+
+    const rig = new EdgeRig({ automatic: true });
+    const p = rig.engine.pupilReactionSettings;
+    p.reduceMotion = true;
+    rig.engine.pupilReactionSettings = p;
+    const st = rig.engine.edgeAnticSettings;
+    st.sleepySinkChance = 1;
+    rig.engine.edgeAnticSettings = st;
+    rig.tick();
+    expect(rig.engine.rollSleepySink()).toBe(false);
   });
 
   /// Never perfectly still with Reduce Motion either: holding idle for 10 s, the pose changes every frame.
-  // needs WP5, WP6, WP7 (full default stack)
-  test.skip('neverStillWithReduceMotion', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier)
+  test.skipIf(missingModifiers().length > 0)('neverStillWithReduceMotion', () => {
     const engine = new FaceEngine({ seed: 3 });
     const p = engine.pupilReactionSettings;
     p.reduceMotion = true;

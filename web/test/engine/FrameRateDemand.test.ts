@@ -1,12 +1,12 @@
 // Port of Tests/FaceEngineTests/FrameRateDemandTests.swift.
 import { describe, expect, test } from 'vitest';
-import { FaceEngine, makePersonTarget } from '../../src/engine';
+import { FaceEngine, makePersonTarget, missingModifiers } from '../../src/engine';
 
 /// How often the idle face asks for the 120 fps burst (hardening design §6.6): blinks never do; only genuinely fast
 /// motion (saccades, one-shots) does.
 describe('FrameRateDemand', () => {
-  // needs WP5, WP6, WP7 (full default stack)
-  test.skip('blinksNeverAskForTheBurst', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier)
+  test.skipIf(missingModifiers().length > 0)('blinksNeverAskForTheBurst', () => {
     const engine = new FaceEngine({ seed: 7 });
     engine.setPeople([makePersonTarget(1, { x: 0.2, y: 0 })], 1);
     const dt = 1.0 / 60;

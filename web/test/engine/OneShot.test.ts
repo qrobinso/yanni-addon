@@ -1,11 +1,10 @@
 // Port of Tests/FaceEngineTests/OneShotTests.swift.
-import { curvePorted, specPorted as specWorks } from './ported';
 import { describe, expect, test } from 'vitest';
 import { SplitMix64 } from '../../src/core/random';
 import { Canvas, EdgeGeometry, ExpressionLibrary, ParamLayout, Units } from '../../src/model';
 import {
   Director, FaceCommand, FaceState, OneShotApply, OneShotKind, OneShotLibrary, OneShotOutput, OneShotParams,
-  OneShotSampler, isAnswer, isEdgeAntic, isIdleGame, isPupilShape, type AgentState,
+  OneShotSampler, IdleGames, isAnswer, isEdgeAntic, isIdleGame, isPupilShape, type AgentState,
 } from '../../src/engine';
 
 // MARK: - Harness
@@ -92,25 +91,16 @@ const isFinite = (o: OneShotOutput): boolean =>
   && lanes(o.lidCoverage).every(Number.isFinite) && Number.isFinite(o.blink) && Number.isFinite(o.lidClose)
   && Number.isFinite(o.brightnessMul);
 
-/// Swift `IdleGames.isPending`: every idle game is built in Swift, so this is always false.
-// TODO(WP6): use IdleGames.isPending once the IdleGames modifier is ported.
-const isPending = (_k: OneShotKind): boolean => false;
+const isPending = (k: OneShotKind): boolean => IdleGames.isPending(k);
 
 const dt120 = 1 / 120;
 
-/// Kinds whose curves are ported (the 18 originals so far); the rest need WP6 (answers, pupil shapes, edge antics,
-/// games) and light up as their curve files land.
-const ported = OneShotKind.allCases.filter(curvePorted);
-const unported = OneShotKind.allCases.filter((k) => !ported.includes(k));
-/// Kinds whose spec works (originals, answers, pupil shapes so far).
-const specPorted = OneShotKind.allCases.filter(specWorks);
-const allPorted = unported.length === 0;
+const ported = OneShotKind.allCases;
 
 // MARK: - Library curves
 
 describe('OneShotLibraryTests', () => {
-  // needs WP6 (OneShotLibrary.specs builds the edge antic and idle game specs)
-  test.skipIf(!allPorted)('specTableCoversEveryKindInOrder', () => {
+  test('specTableCoversEveryKindInOrder', () => {
     expect(OneShotLibrary.specs.length).toBe(OneShotKind.allCases.length);
     for (const k of OneShotKind.allCases) {
       expect(OneShotLibrary.spec(k).kind).toBe(k);
@@ -118,12 +108,6 @@ describe('OneShotLibraryTests', () => {
     }
   });
 
-  test('specTableCoversEveryKindInOrder (ported specs)', () => {
-    for (const k of specPorted) {
-      expect(OneShotLibrary.spec(k).kind).toBe(k);
-      expect(OneShotLibrary.spec(k).duration).toBeGreaterThan(0);
-    }
-  });
 
   const startsAndEndsAtExactlyZero = (kind: OneShotKind): void => {
     const rng = new SplitMix64(99);
@@ -145,8 +129,6 @@ describe('OneShotLibraryTests', () => {
     }
   };
   test.each(ported)('startsAndEndsAtExactlyZero %s', startsAndEndsAtExactlyZero);
-  // needs WP6 (answer, edge antic, pupil shape and idle game curves)
-  test.skip.each(unported)('startsAndEndsAtExactlyZero %s', startsAndEndsAtExactlyZero);
 
   const curvesAreContinuousAt120fps = (kind: OneShotKind): void => {
     const rng = new SplitMix64(5);
@@ -166,8 +148,6 @@ describe('OneShotLibraryTests', () => {
     }
   };
   test.each(ported)('curvesAreContinuousAt120fps %s', curvesAreContinuousAt120fps);
-  // needs WP6 (answer, edge antic, pupil shape and idle game curves)
-  test.skip.each(unported)('curvesAreContinuousAt120fps %s', curvesAreContinuousAt120fps);
 
   test('repeatsVary', () => {
     const rng = new SplitMix64(3);
@@ -251,8 +231,6 @@ describe('OneShotSamplerTests', () => {
     expect(rig.sampler.activeSlotCount).toBe(0);
   };
   test.each(ported)('runsToCompletionContinuouslyAndReportsOnce %s', runsToCompletionContinuouslyAndReportsOnce);
-  // needs WP6 (answer, edge antic, pupil shape and idle game curves)
-  test.skip.each(unported)('runsToCompletionContinuouslyAndReportsOnce %s', runsToCompletionContinuouslyAndReportsOnce);
 
   test('applyFoldsIntoAccumulators', () => {
     const s = new FaceState(ExpressionLibrary.bundled(), 0);
@@ -520,8 +498,7 @@ describe('OneShotSamplerTests', () => {
     expect(worst, `worst 60/120 difference ${worst}`).toBeLessThan(1e-3);
   });
 
-  // needs WP6 (requests every kind: edge antic and idle game specs and curves)
-  test.skipIf(!allPorted)('capacityOverflowAllKindsAtOnce', () => {
+  test('capacityOverflowAllKindsAtOnce', () => {
     const rig = new OneShotRig(77);
     for (const k of OneShotKind.allCases) rig.request(k);
     let prev = new OneShotOutput();

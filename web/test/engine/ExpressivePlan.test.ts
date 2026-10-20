@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { BrowLayout, ExpressionMix } from '../../src/model';
 import {
-  ExpressivePlan, FaceCommand, FaceEngine, OneShotRequest, makeReactionCue, type AgentState,
+  ExpressivePlan, FaceCommand, FaceEngine, OneShotRequest, makeReactionCue, type AgentState, missingModifiers,
 } from '../../src/engine';
 
 const sceptical = (): ExpressivePlan => new ExpressivePlan({
@@ -77,8 +77,8 @@ describe('ExpressivePlan', () => {
     expect(p.moveIntensity).toBe(OneShotRequest.amplitudeIntensityRange[1]);
   });
 
-  // needs WP5, WP6, WP7 (full default stack, ExpressiveOverlay)
-  test.skip('playSendsMoveCueAndGlanceThenBlendsAndReleases', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier, ExpressiveOverlay)
+  test.skipIf(missingModifiers().length > 0)('playSendsMoveCueAndGlanceThenBlendsAndReleases', () => {
     const e = engine();
     const neutralBrows = e.state.output.brows.copy();
     const played = e.playExpressive(sceptical());
@@ -106,8 +106,8 @@ describe('ExpressivePlan', () => {
     expect(overlay(e).plan).toBeNull();
   });
 
-  // needs WP5, WP6, WP7 (full default stack)
-  test.skip('busyOneShotDropsTheMoveButKeepsTheRest', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier)
+  test.skipIf(missingModifiers().length > 0)('busyOneShotDropsTheMoveButKeepsTheRest', () => {
     const e = engine();
     e.send(FaceCommand.playOneShot('laugh'));
     e.tick(1.0 / 60);
@@ -117,8 +117,8 @@ describe('ExpressivePlan', () => {
     expect(e.state.commands.some((c) => c.kind === 'play')).toBe(false);
   });
 
-  // needs WP5, WP6, WP7 (full default stack, ExpressiveOverlay)
-  test.skip('speakingPlaysQuietly', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier, ExpressiveOverlay)
+  test.skipIf(missingModifiers().length > 0)('speakingPlaysQuietly', () => {
     const e = engine('speaking');
     const played = e.playExpressive(sceptical());
     expect(played).not.toBeNull();
@@ -129,15 +129,15 @@ describe('ExpressivePlan', () => {
     expect(peak > 0.12 && peak <= 0.225 + 1e-3).toBe(true);
   });
 
-  // needs WP5, WP6, WP7 (full default stack)
-  test.skip('asleepPlaysNothing', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier)
+  test.skipIf(missingModifiers().length > 0)('asleepPlaysNothing', () => {
     const e = engine('asleep');
     expect(e.playExpressive(sceptical())).toBeNull();
     expect(e.state.commands.length).toBe(0);
   });
 
-  // needs WP5, WP6, WP7 (full default stack, ExpressiveOverlay)
-  test.skip('aReplacedPlanNeverSnaps', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier, ExpressiveOverlay)
+  test.skipIf(missingModifiers().length > 0)('aReplacedPlanNeverSnaps', () => {
     const e = engine();
     e.playExpressive(new ExpressivePlan({ expression: 'Happiness', intensity: 0.9, hold: 2, brow: 'raise' }));
     for (let i = 0; i < 40; i++) e.tick(1.0 / 60);
@@ -151,8 +151,8 @@ describe('ExpressivePlan', () => {
     }
   });
 
-  // needs WP5, WP6, WP7 (full default stack, ExpressiveOverlay, TouchReactions)
-  test.skip('overrideIgnoresTheOverlayAndTouchOverlayWins', () => {
+  // needs the full default stack (lights up once WP6/WP7 register every modifier, ExpressiveOverlay, TouchReactions)
+  test.skipIf(missingModifiers().length > 0)('overrideIgnoresTheOverlayAndTouchOverlayWins', () => {
     const e = engine();
     e.playExpressive(new ExpressivePlan({ expression: 'Happiness', intensity: 1, hold: 3 }));
     for (let i = 0; i < 30; i++) e.tick(1.0 / 60);
