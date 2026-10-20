@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yanni</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1c1c1e; --bg: #fafafa; --muted: #6b6b70; --line: #ddd; --accent: #03a9f4; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #e5e5ea; --bg: #111; --muted: #9a9aa0; --line: #333; } }
+  body { font: 15px/1.45 system-ui, sans-serif; color: var(--fg); background: var(--bg); margin: 0; padding: 16px; max-width: 720px; }
+  h1 { font-size: 22px; } h2 { font-size: 17px; margin-top: 28px; }
+  .muted { color: var(--muted); } .code { font: 600 34px/1 ui-monospace, monospace; letter-spacing: 6px; }
+  table { width: 100%; border-collapse: collapse; } td, th { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+  input { font: inherit; padding: 6px 8px; } button { font: inherit; padding: 6px 12px; cursor: pointer; }
+  label { display: block; margin: 8px 0; } .err { color: #d32f2f; }
+</style>
+</head>
+<body>
+<h1>Yanni</h1>
+<p id="status" class="muted">Loading…</p>
+
+<h2>Pair a display</h2>
+<p class="muted">Open <b>https://&lt;this Home Assistant&gt;:&lt;display port&gt;/</b> on the tablet, then enter the code there. Codes work once and expire after 10 minutes.</p>
+<form id="pair">
+  <label>Room <input id="room" required maxlength="40"></label>
+  <details><summary class="muted">Moving from the iPad app?</summary>
+    <label>Install ID (Settings → Status on the iPad; keeps its Home Assistant entities)
+      <input id="install" maxlength="64" pattern="[0-9a-fA-F-]{8,64}"></label>
+  </details>
+  <button>Make a pairing code</button> <span id="pairErr" class="err" role="alert"></span>
+</form>
+<div id="codes"></div>
+
+<h2>Displays</h2>
+<table><thead><tr><th>Room</th><th>Node</th><th>Status</th><th></th></tr></thead><tbody id="devices"></tbody></table>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+let roomFilled = false;
+async function refresh() {
+  const s = await (await fetch('api/status')).json();
+  $('status').textContent = `Home Assistant: ${s.ha ? 'connected' : 'not connected'} · MQTT: ${s.mqtt ? 'on' : 'no broker'}`;
+  if (!roomFilled) { $('room').value = s.defaultRoom; roomFilled = true; }
+  $('codes').innerHTML = s.codes.map((c) => `<p><span class="code">${esc(c.code)}</span> <span class="muted">${esc(c.room)}, until ${new Date(c.expiresAt).toLocaleTimeString()}</span></p>`).join('');
+  $('devices').innerHTML = s.devices.map((d) => `<tr><td>${esc(d.room)}</td><td class="muted">yanni_${esc(d.id)}</td><td>${d.online ? 'online' : 'offline'}</td><td><button data-id="${esc(d.id)}" data-room="${esc(d.room)}">Revoke</button></td></tr>`).join('')
+    || '<tr><td colspan="4" class="muted">None yet.</td></tr>';
+}
+$('pair').onsubmit = async (e) => {
+  e.preventDefault();
+  const r = await fetch('api/codes', { method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ room: $('room').value, installId: $('install').value || undefined }) });
+  $('pairErr').textContent = r.ok ? '' : (await r.json()).error;
+  refresh();
+};
+$('devices').onclick = async (e) => {
+  const b = e.target.closest('button[data-id]');
+  if (!b || !confirm(`Revoke Yanni ${b.dataset.room}? It is removed from Home Assistant and must pair again.`)) return;
+  await fetch(`api/devices/${b.dataset.id}`, { method: 'DELETE' });
+  refresh();
+};
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
