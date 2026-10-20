@@ -10,6 +10,8 @@ import { EyeGeometry } from '../../src/render/EyeGeometry';
 import { EyeSDF } from '../../src/render/EyeSDF';
 import { makeRenderStyle, type RenderStyle } from '../../src/render/RenderStyle';
 import { Viewport } from '../../src/render/Viewport';
+import { MoodBackground, MoodBackgroundConfig } from '../../src/engine/MoodBackground';
+import { MoodPalette } from '../../src/engine/MoodPalette';
 
 const aspect = 4.0 / 3.0;
 
@@ -26,12 +28,8 @@ function frame(colour: V3, o: { strength?: number; presence?: number; brightness
     backgroundPresence: o.presence ?? 1, backgroundBrightness: brightness });
 }
 
-// port-note: the Swift takes each anchor through `MoodBackground().colourLab(pad:)` (FaceEngine, ported separately);
-// here the anchors' own reference hexes from `MoodPalette.background` stand in (same hues, unbanded lightness).
-const anchorColours: [string, V3][] = ([
-  ['content', 0xb78bbe], ['happy', 0xfcbb3d], ['excited', 0xffb13b], ['sad', 0x7ccbec], ['tired', 0x7d90ae],
-  ['angry', 0x9a928c], ['anxious', 0xf38258], ['embarrassed', 0xe999b1], ['surprised', 0x8fd6c8], ['worried', 0xaeca63],
-] as [string, number][]).map(([n, h]) => [n, Oklab.linear(h)]);
+const anchorColours: [string, V3][] = MoodPalette.background.anchors.map((a) =>
+  [a.name, Oklab.toLinearClamped(new MoodBackground().colourLab(a.pad, new MoodBackgroundConfig()), { x: 0, y: 0, z: 0 })]);
 
 const hue = (lab: V3): number => Math.atan2(lab.z, lab.y) * 180 / Math.PI;
 const zero = { x: 0, y: 0, z: 0 };

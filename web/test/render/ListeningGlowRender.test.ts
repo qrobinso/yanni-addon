@@ -10,9 +10,11 @@ import { EyeSDF } from '../../src/render/EyeSDF';
 import { makeRenderStyle, type RenderStyle } from '../../src/render/RenderStyle';
 import { FrameUniforms, frameUniformFloats, packFrameUniforms } from '../../src/render/RenderUniforms';
 import { Viewport } from '../../src/render/Viewport';
+import { ListeningGlow } from '../../src/engine/ListeningGlow';
+import { MoodBackground, MoodBackgroundConfig } from '../../src/engine/MoodBackground';
+import { MoodPalette } from '../../src/engine/MoodPalette';
 
-/// Swift `ListeningGlow.peakHeight`.
-const peakHeight = 0.21;
+const peakHeight = ListeningGlow.peakHeight;
 
 function colourStyle(): RenderStyle {
   const s = makeRenderStyle();
@@ -21,31 +23,24 @@ function colourStyle(): RenderStyle {
   return s;
 }
 
-// port-note: ListeningGlow.colours, MoodPalette and MoodBackground.colourLab are not ported yet (engine), so the glow's
-// colours are stand-ins and the mood-colour backgrounds are left out (over black only; TODO once the engine lands).
-// Over black the engine's first colour is the crescent's (Oklab L held in 0.72…0.86, chroma ×1.1, before its gamut
-// fit); the second here is white, the worst case for the luminance-step bound.
-function standInGlow(): [V3, V3] {
-  const cr = Oklab.fromLinear(FaceFrame.defaultColor);
-  const a = Oklab.toLinearClamped(v3(Math.min(Math.max(cr.x, 0.72), 0.86), cr.y * 1.1, cr.z * 1.1), v3(0));
-  const c = (x: number) => Math.min(Math.max(x, 0), 1);
-  return [v3(c(a.x), c(a.y), c(a.z)), v3(1, 1, 1)];
-}
-const anchorColours: V3[] = [];
-
-/// A frame with the glow at `level` over `bg` (undefined: black).
+/// A frame with the glow at `level` over `bg` (undefined: black), its colours derived as the engine does.
 function frame(level: number, bg?: V3, motion = 1): FaceFrame {
   const f = makeFaceFrame(FacePose.defaults, { brightness: 0.85, backgroundColor: bg ?? v3(0),
     backgroundStrength: bg === undefined ? 0 : 1, backgroundBrightness: 0.85 });
-  const [a, b] = standInGlow();
+  const [a, b] = ListeningGlow.colours(bg === undefined ? v3(0) : Oklab.fromLinear(bg), bg === undefined ? 0 : 1,
+    Oklab.fromLinear(FaceFrame.defaultColor));
+  const c = (x: V3): V3 => { const l = Oklab.toLinear(x), k = (v: number) => Math.min(Math.max(v, 0), 1); return v3(k(l.x), k(l.y), k(l.z)); };
   f.glowLevel = level;
-  f.glowHeight = peakHeight * Math.min(level, 1.2);
+  f.glowHeight = ListeningGlow.peakHeight * Math.min(level, 1.2);
   f.glowMotion = motion;
-  f.glowColor = a;
-  f.glowColor2 = b;
+  f.glowColor = c(a);
+  f.glowColor2 = c(b);
   f.glowPhase = v4(0.4, 1.1, 2.3, 4.0);
   return f;
 }
+
+const anchorColours: V3[] = MoodPalette.background.anchors.map((a) =>
+  Oklab.toLinearClamped(new MoodBackground().colourLab(a.pad, new MoodBackgroundConfig()), v3(0)));
 
 const packed = (u: FrameUniforms) => packFrameUniforms(u, new Float32Array(frameUniformFloats));
 const code = (c: number) => Math.round(EyeSDF.srgbEncode(c) * 255);

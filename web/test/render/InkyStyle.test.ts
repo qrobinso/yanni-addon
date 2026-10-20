@@ -1,5 +1,8 @@
 // Port of FaceRenderingTests/InkyStyleTests.swift (CPU tests; the rendered-crescent and GPU-vs-CPU suites need
 // Metal). The inky cartoon look: egg sclera, rim + ink bands, tall pupils with an attached notch and crescent.
+import { FaceEngine, Mood } from '../../src/engine';
+import { MoodColor } from '../../src/engine/modifiers/MoodColor';
+import { ExpressionMix } from '../../src/model';
 import { describe, expect, test } from 'vitest';
 import { v2, type V2 } from '../../src/core/vec';
 import { ExpressionLibrary } from '../../src/model/Expression';
@@ -243,8 +246,15 @@ describe('InkyStyle', () => {
 
   test('crescentIsBaseCyanAtThePlayfulBaseline', () => {
     const style = makeRenderStyle();
-    // port-note: the Swift first checks the settled FaceEngine colour at `Mood.playful`
-    // (MoodColorRenderTests.settledColor), which needs FaceEngine; that assertion is left to the engine tests.
+    // The settled engine colour at `Mood.playful` (Swift MoodColorRenderTests.settledColor) resolves to the base too.
+    const mc = new MoodColor();
+    mc.lightnessMatch = 1;
+    const engine = new FaceEngine({ seed: 7, modifiers: [mc] });
+    engine.setExpressionOverride(ExpressionMix.single('Neutral'));
+    engine.setMood(Mood.playful);
+    let f = engine.tick(1 / 60);
+    for (let i = 0; i < 60 * 6; i++) f = engine.tick(1 / 60);
+    expect(resolvedCrescentColor(style, makeFaceFrame(FacePose.defaults, { color: f.color }))).toEqual(style.crescentColor);
     expect(resolvedStyle(style, makeFaceFrame(FacePose.defaults)).crescentColor).toEqual(style.crescentColor);
     expect(Oklab.hex(style.crescentColor)).toBe(0x5bb3c4);
     // Mood shifts it: a red-orange mood warms the crescent, a blue one cools it, lightness stays near the base.
