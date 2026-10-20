@@ -1,0 +1,11 @@
+{
+  "name": "yanni-addon",
+  "private": true,
+  "type": "module",
+  "workspaces": ["web", "server"],
+  "scripts": {
+    "test": "npm test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev -w web"
+  }
+}

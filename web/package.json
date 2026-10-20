@@ -1,0 +1,17 @@
+{
+  "name": "@yanni/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.74",
+    "typescript": "5.9",
+    "vite": "^7.3.7",
+    "vitest": "^3.2.7"
+  }
+}
