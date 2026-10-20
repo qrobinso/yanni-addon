@@ -1,0 +1,2810 @@
+{
+  "version": 1,
+  "attribution": "Expression values from PyCozmo (MIT, (c) 2019-2020 zayfod) pycozmo/expressions/expressions.py, based on 'Expressive Eyes' by Catherine Chambers. PAD tags authored for Yanni. Neutral is the blend reference at eye scale 1.0 (PyCozmo draws it at 0.8); overall eye size comes from RenderStyle.eyeScale.",
+  "expressions": {
+    "Neutral": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": 0,
+        "a": 0,
+        "d": 0
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.0,
+          "rotation": 12.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.34,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.012,
+          "rotation": 11.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.31,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Anger": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": -30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.08,
+          "size": 0.42,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": 30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.08,
+          "size": 0.42,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.6,
+        "a": 0.6,
+        "d": 0.5
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.04,
+          "rotation": -24.0,
+          "width": 1.1,
+          "thickness": 1.12,
+          "curvature": 0.15,
+          "inner": -0.12,
+          "outer": 0.02,
+          "peak": 0.65
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.028,
+          "rotation": -25.0,
+          "width": 1.1,
+          "thickness": 1.12,
+          "curvature": 0.12,
+          "inner": -0.12,
+          "outer": 0.02,
+          "peak": 0.65
+        }
+      }
+    },
+    "Sadness": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": 20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.3,
+          "size": 0.56,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": -20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.3,
+          "size": 0.56,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.6,
+        "a": -0.4,
+        "d": -0.4
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.0,
+          "rotation": 28.0,
+          "width": 1.14,
+          "thickness": 1.08,
+          "curvature": -0.02,
+          "inner": 0.03,
+          "outer": -0.04,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.012,
+          "rotation": 27.0,
+          "width": 1.14,
+          "thickness": 1.08,
+          "curvature": -0.05,
+          "inner": 0.03,
+          "outer": -0.04,
+          "peak": 0.48
+        }
+      }
+    },
+    "Happiness": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 1.0,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 1.0,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.4
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.58,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 1.0,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 1.0,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.4
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.58,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.8,
+        "a": 0.4,
+        "d": 0.3
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.09,
+          "rotation": 9.0,
+          "width": 1.0,
+          "thickness": 1.08,
+          "curvature": 0.72,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.4
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.11,
+          "rotation": 8.0,
+          "width": 1.0,
+          "thickness": 1.08,
+          "curvature": 0.74,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.4
+        }
+      }
+    },
+    "Surprise": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.25,
+        "scale_y": 1.25,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.3,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.25,
+        "scale_y": 1.25,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.3,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.2,
+        "a": 0.8,
+        "d": -0.1
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.0,
+          "rotation": 12.0,
+          "width": 1.04,
+          "thickness": 1.15,
+          "curvature": 0.72,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.4
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.012,
+          "rotation": 11.0,
+          "width": 1.04,
+          "thickness": 1.15,
+          "curvature": 0.69,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.4
+        }
+      }
+    },
+    "Disgust": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": 10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.3,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.2,
+          "angle": 20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.2,
+          "angle": 10.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.6,
+        "a": 0.3,
+        "d": 0.4
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.03,
+          "rotation": -12.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.05,
+          "inner": -0.08,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.05,
+          "rotation": -4.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.12,
+          "inner": 0.0,
+          "outer": 0.02,
+          "peak": 0.48
+        }
+      }
+    },
+    "Fear": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 30.0,
+          "bend": 0.1
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 10.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.32,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": -30.0,
+          "bend": 0.1
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": -10.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.32,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.6,
+        "a": 0.7,
+        "d": -0.6
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.06,
+          "rotation": 24.0,
+          "width": 1.08,
+          "thickness": 1.0,
+          "curvature": 0.12,
+          "inner": 0.06,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.072,
+          "rotation": 23.0,
+          "width": 1.08,
+          "thickness": 1.0,
+          "curvature": 0.09,
+          "inner": 0.06,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Pleading": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": -0.2,
+          "size": 0.62,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": -30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": -0.2,
+          "size": 0.62,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.2,
+        "a": 0.3,
+        "d": -0.6
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.04,
+          "rotation": 30.0,
+          "width": 1.1,
+          "thickness": 1.0,
+          "curvature": 0.04,
+          "inner": 0.06,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.052,
+          "rotation": 29.0,
+          "width": 1.1,
+          "thickness": 1.0,
+          "curvature": 0.01,
+          "inner": 0.06,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Vulnerability": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": 20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 10.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": -20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": -10.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.3,
+        "a": 0.1,
+        "d": -0.6
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.0,
+          "rotation": 24.0,
+          "width": 1.08,
+          "thickness": 1.0,
+          "curvature": 0.02,
+          "inner": 0.04,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.012,
+          "rotation": 23.0,
+          "width": 1.08,
+          "thickness": 1.0,
+          "curvature": -0.01,
+          "inner": 0.04,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Despair": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": 30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.45,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": -30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.45,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.8,
+        "a": -0.2,
+        "d": -0.7
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.03,
+          "rotation": 30.0,
+          "width": 1.1,
+          "thickness": 1.0,
+          "curvature": -0.08,
+          "inner": 0.05,
+          "outer": -0.04,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.018,
+          "rotation": 29.0,
+          "width": 1.1,
+          "thickness": 1.0,
+          "curvature": -0.11,
+          "inner": 0.05,
+          "outer": -0.04,
+          "peak": 0.48
+        }
+      }
+    },
+    "Guilt": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": 10.0,
+          "bend": 0.3
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.35,
+          "y": 0.5,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.6,
+          "angle": -10.0,
+          "bend": 0.3
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.35,
+          "y": 0.5,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.5,
+        "a": -0.1,
+        "d": -0.5
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.02,
+          "rotation": 22.0,
+          "width": 1.06,
+          "thickness": 1.0,
+          "curvature": 0.0,
+          "inner": 0.03,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.008,
+          "rotation": 21.0,
+          "width": 1.06,
+          "thickness": 1.0,
+          "curvature": -0.03,
+          "inner": 0.03,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Disappointment": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": -10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": 10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.5,
+        "a": -0.2,
+        "d": -0.2
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.04,
+          "rotation": 16.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.06,
+          "inner": 0.0,
+          "outer": -0.04,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.028,
+          "rotation": 15.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.03,
+          "inner": 0.0,
+          "outer": -0.04,
+          "peak": 0.48
+        }
+      }
+    },
+    "Embarrassment": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.5,
+          "angle": 10.0,
+          "bend": 0.1
+        },
+        "lower_lid": {
+          "y": 0.1,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.35,
+          "y": 0.5,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.5,
+          "angle": -10.0,
+          "bend": 0.1
+        },
+        "lower_lid": {
+          "y": 0.1,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.35,
+          "y": 0.5,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.3,
+        "a": 0.3,
+        "d": -0.5
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.0,
+          "rotation": 22.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.08,
+          "inner": 0.05,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.012,
+          "rotation": 21.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.05,
+          "inner": 0.05,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Horror": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.3,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": -20.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.3,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.8,
+        "a": 0.8,
+        "d": -0.5
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.1,
+          "rotation": 26.0,
+          "width": 1.08,
+          "thickness": 1.1,
+          "curvature": 0.2,
+          "inner": 0.08,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.112,
+          "rotation": 25.0,
+          "width": 1.08,
+          "thickness": 1.1,
+          "curvature": 0.17,
+          "inner": 0.08,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Skepticism": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": -10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.42,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.15,
+          "angle": 25.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.42,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.1,
+        "a": 0.1,
+        "d": 0.4
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.04,
+          "rotation": -6.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.1,
+          "inner": -0.05,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.08,
+          "rotation": 2.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.62,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.45
+        }
+      }
+    },
+    "Annoyance": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": -30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.3,
+          "angle": -10.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 1.0,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 1.0,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.2,
+          "angle": 30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 5.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.4,
+        "a": 0.3,
+        "d": 0.3
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.03,
+          "rotation": -20.0,
+          "width": 1.1,
+          "thickness": 1.0,
+          "curvature": 0.12,
+          "inner": -0.1,
+          "outer": 0.0,
+          "peak": 0.62
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.018,
+          "rotation": -21.0,
+          "width": 1.1,
+          "thickness": 1.0,
+          "curvature": 0.09,
+          "inner": -0.1,
+          "outer": 0.0,
+          "peak": 0.62
+        }
+      }
+    },
+    "Fury": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": -30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": 30.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.8,
+        "a": 0.9,
+        "d": 0.7
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.05,
+          "rotation": -28.0,
+          "width": 1.12,
+          "thickness": 1.18,
+          "curvature": 0.1,
+          "inner": -0.14,
+          "outer": 0.0,
+          "peak": 0.65
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.038,
+          "rotation": -29.0,
+          "width": 1.12,
+          "thickness": 1.18,
+          "curvature": 0.07,
+          "inner": -0.14,
+          "outer": 0.0,
+          "peak": 0.65
+        }
+      }
+    },
+    "Suspicion": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": -10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": -0.35,
+          "y": 0.0,
+          "size": 0.38,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": 10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": -0.35,
+          "y": 0.0,
+          "size": 0.38,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.3,
+        "a": 0.2,
+        "d": 0.3
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.05,
+          "rotation": -8.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.12,
+          "inner": -0.05,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.038,
+          "rotation": -9.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.09,
+          "inner": -0.05,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Rejection": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.8,
+          "angle": 25.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.8,
+          "angle": 25.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.5,
+        "a": 0.0,
+        "d": 0.3
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.03,
+          "rotation": 8.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.15,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.018,
+          "rotation": 7.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.12,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Boredom": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.3,
+          "y": 0.25,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.3,
+          "y": 0.25,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.2,
+        "a": -0.6,
+        "d": 0.0
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.05,
+          "rotation": 6.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.12,
+          "inner": 0.0,
+          "outer": -0.04,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.038,
+          "rotation": 5.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.09,
+          "inner": 0.0,
+          "outer": -0.04,
+          "peak": 0.48
+        }
+      }
+    },
+    "Tiredness": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": 5.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.35,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.4,
+          "angle": -5.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.35,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.0,
+        "a": -0.8,
+        "d": -0.1
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.05,
+          "rotation": 14.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.1,
+          "inner": 0.0,
+          "outer": -0.08,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.038,
+          "rotation": 13.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.07,
+          "inner": 0.0,
+          "outer": -0.08,
+          "peak": 0.48
+        }
+      }
+    },
+    "Asleep": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 50.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.45,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.4,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 50.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.45,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.5,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.4,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.0,
+        "a": -1.0,
+        "d": 0.0
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.06,
+          "rotation": 8.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.1,
+          "inner": 0.0,
+          "outer": -0.06,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.048,
+          "rotation": 7.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.07,
+          "inner": 0.0,
+          "outer": -0.06,
+          "peak": 0.48
+        }
+      }
+    },
+    "Confusion": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.2,
+          "angle": 0.0,
+          "bend": 0.2
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.3,
+          "angle": -10.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.2,
+          "angle": 5.0,
+          "bend": 0.2
+        }
+      },
+      "pad": {
+        "p": -0.1,
+        "a": 0.3,
+        "d": -0.4
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.07,
+          "rotation": 4.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.6,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.45
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.03,
+          "rotation": 18.0,
+          "width": 1.0,
+          "thickness": 1.0,
+          "curvature": 0.05,
+          "inner": 0.04,
+          "outer": 0.0,
+          "peak": 0.48
+        }
+      }
+    },
+    "Amazement": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.2,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.62,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.2,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.62,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.6,
+        "a": 0.8,
+        "d": 0.0
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.06,
+          "rotation": 10.0,
+          "width": 1.0,
+          "thickness": 1.08,
+          "curvature": 0.65,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.42
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.072,
+          "rotation": 9.0,
+          "width": 1.0,
+          "thickness": 1.08,
+          "curvature": 0.62,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.42
+        }
+      }
+    },
+    "Excitement": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.3,
+          "angle": 0.0,
+          "bend": 0.2
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.6,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.3,
+          "angle": 0.0,
+          "bend": 0.2
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.6,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.8,
+        "a": 0.9,
+        "d": 0.4
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.09,
+          "rotation": 10.0,
+          "width": 1.0,
+          "thickness": 1.06,
+          "curvature": 0.68,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.42
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.102,
+          "rotation": 9.0,
+          "width": 1.0,
+          "thickness": 1.06,
+          "curvature": 0.65,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.42
+        }
+      }
+    },
+    "MockAnnoyed": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.32,
+          "angle": -5.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.08,
+          "y": 0.18,
+          "size": 0.46,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.32,
+          "angle": 5.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": -0.08,
+          "y": 0.18,
+          "size": 0.46,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.4,
+        "a": 0.35,
+        "d": 0.35
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": -0.02,
+          "rotation": -17.0,
+          "width": 1.15,
+          "thickness": 1.05,
+          "curvature": 0.34,
+          "inner": -0.08,
+          "outer": 0.03,
+          "peak": 0.76
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.008,
+          "rotation": -18.0,
+          "width": 1.15,
+          "thickness": 1.05,
+          "curvature": 0.31,
+          "inner": -0.08,
+          "outer": 0.03,
+          "peak": 0.76
+        }
+      }
+    },
+    "Curious": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.05,
+        "scale_y": 1.07,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.3,
+          "y": 0.05,
+          "size": 0.52,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 6.0,
+        "scale_x": 0.95,
+        "scale_y": 0.93,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.3,
+          "y": 0.05,
+          "size": 0.5,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.3,
+        "a": 0.4,
+        "d": -0.1
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.06,
+          "rotation": 3.0,
+          "width": 1.0,
+          "thickness": 1.12,
+          "curvature": 0.72,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.46
+        },
+        "right": {
+          "x": 0.05,
+          "y": -0.01,
+          "rotation": 10.0,
+          "width": 1.06,
+          "thickness": 1.15,
+          "curvature": 0.14,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.56
+        }
+      }
+    },
+    "Concerned": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.14,
+          "angle": 14.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": 0.05,
+          "y": 0.18,
+          "size": 0.52,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.5,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.5,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.14,
+          "angle": -14.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "pupil": {
+          "x": -0.05,
+          "y": 0.18,
+          "size": 0.52,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": -0.3,
+        "a": 0.1,
+        "d": -0.4
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.0,
+          "rotation": 28.0,
+          "width": 1.14,
+          "thickness": 1.08,
+          "curvature": -0.02,
+          "inner": 0.03,
+          "outer": -0.04,
+          "peak": 0.48
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.012,
+          "rotation": 27.0,
+          "width": 1.14,
+          "thickness": 1.08,
+          "curvature": -0.05,
+          "inner": 0.03,
+          "outer": -0.04,
+          "peak": 0.48
+        }
+      }
+    },
+    "Contentment": {
+      "face": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0
+      },
+      "left": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.75,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.75,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.18,
+          "angle": 0.0,
+          "bend": 0.2
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.56,
+          "squash": 0.0
+        }
+      },
+      "right": {
+        "center_x": 0.0,
+        "center_y": 0.0,
+        "scale_x": 1.0,
+        "scale_y": 1.0,
+        "angle": 0.0,
+        "lower_inner_radius_x": 0.5,
+        "lower_inner_radius_y": 0.5,
+        "lower_outer_radius_x": 0.5,
+        "lower_outer_radius_y": 0.5,
+        "upper_inner_radius_x": 0.75,
+        "upper_inner_radius_y": 0.5,
+        "upper_outer_radius_x": 0.75,
+        "upper_outer_radius_y": 0.5,
+        "upper_lid": {
+          "y": 0.0,
+          "angle": 0.0,
+          "bend": 0.0
+        },
+        "lower_lid": {
+          "y": 0.18,
+          "angle": 0.0,
+          "bend": 0.2
+        },
+        "pupil": {
+          "x": 0.0,
+          "y": 0.0,
+          "size": 0.56,
+          "squash": 0.0
+        }
+      },
+      "pad": {
+        "p": 0.5,
+        "a": 0.2,
+        "d": 0.2
+      },
+      "brows": {
+        "left": {
+          "x": 0.05,
+          "y": 0.04,
+          "rotation": 10.0,
+          "width": 1.0,
+          "thickness": 1.03,
+          "curvature": 0.5,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.45
+        },
+        "right": {
+          "x": 0.05,
+          "y": 0.055,
+          "rotation": 9.0,
+          "width": 1.0,
+          "thickness": 1.03,
+          "curvature": 0.5,
+          "inner": 0.0,
+          "outer": 0.0,
+          "peak": 0.45
+        }
+      }
+    }
+  }
+}
