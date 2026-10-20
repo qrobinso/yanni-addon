@@ -28,7 +28,17 @@ const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.wasm': 'application/wasm', '.onnx': 'application/octet-stream', '.png': 'image/png',
   '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.task': 'application/octet-stream',
+  '.map': 'application/json', '.txt': 'text/plain; charset=utf-8', '.woff2': 'font/woff2', '.jpg': 'image/jpeg', '.webp': 'image/webp',
+  '.tflite': 'application/octet-stream', '.binarypb': 'application/octet-stream',
 };
+
+/** Cross-origin isolation for the kiosk app (SharedArrayBuffer: onnxruntime-web's wasm threads). Every subresource is
+ *  same-origin, so require-corp costs nothing; CORP marks our own files as same-origin only. */
+export const ISOLATION_HEADERS = {
+  'cross-origin-opener-policy': 'same-origin',
+  'cross-origin-embedder-policy': 'require-corp',
+  'cross-origin-resource-policy': 'same-origin',
+} as const;
 
 function send(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' });
@@ -47,7 +57,7 @@ async function readBody(req: IncomingMessage, limit = 4096): Promise<any> {
 }
 
 /** Static files under `root`; unknown paths without an extension fall back to index.html (the app's routes). */
-function serveStatic(root: string, req: IncomingMessage, res: ServerResponse): void {
+function serveStatic(root: string, req: IncomingMessage, res: ServerResponse, extra: Record<string, string> = {}): void {
   const path = decodeURIComponent(new URL(req.url ?? '/', 'http://x').pathname);
   let file = normalize(join(root, path));
   if (!file.startsWith(normalize(root + sep)) && file !== normalize(root)) { res.writeHead(403).end(); return; }
@@ -55,8 +65,8 @@ function serveStatic(root: string, req: IncomingMessage, res: ServerResponse): v
   if (st?.isDirectory()) { file = join(file, 'index.html'); st = statSafe(file); }
   if (!st && !extname(path)) { file = join(root, 'index.html'); st = statSafe(file); }
   if (!st) { res.writeHead(404).end('not found'); return; }
-  res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'content-length': st.size,
-    'cache-control': extname(file) === '.html' ? 'no-cache' : 'public, max-age=3600' });
+  res.writeHead(200, { ...extra, 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'content-length': st.size,
+    'cache-control': extname(file) === '.html' ? 'no-cache' : 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
   createReadStream(file).pipe(res);
 }
 
@@ -85,7 +95,7 @@ export function createDisplayServer(deps: AppDeps, webRoot: string, tls?: { cert
       }
       if (url.pathname.startsWith('/api/tts_proxy/') && req.method === 'GET') return ttsProxy(deps, req, res, url);
       if (url.pathname.startsWith('/api/')) return send(res, 404, { error: 'not found' });
-      serveStatic(webRoot, req, res);
+      serveStatic(webRoot, req, res, ISOLATION_HEADERS);
     } catch (e) {
       send(res, 400, { error: (e as Error).message });
     }

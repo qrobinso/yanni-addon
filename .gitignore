@@ -12,3 +12,6 @@ web/public/ort/
 
 # Render parity outputs (web/test/render/parity/run.mjs)
 web/test/render/parity/out/
+
+# Kiosk smoke screenshots (web/scripts/kiosk-smoke.mjs)
+web/test/app/out/

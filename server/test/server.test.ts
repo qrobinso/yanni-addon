@@ -15,6 +15,9 @@ async function rig(trusted = ['127.0.0.1']) {
   const web = join(dir, 'web');
   mkdirSync(web);
   writeFileSync(join(web, 'index.html'), '<title>face</title>');
+  mkdirSync(join(web, 'ort'));
+  writeFileSync(join(web, 'ort', 'x.wasm'), 'w');
+  writeFileSync(join(web, 'ort', 'x.mjs'), 'm');
   const deps = { devices: new Devices(dir), settings: new SettingsStore(dir), bridge: () => undefined };
   const { server, displays } = createDisplayServer(deps, web);
   const ingress = createIngressServer(deps, web, trusted, () => {});
@@ -53,6 +56,17 @@ describe('servers', () => {
     const r = await rig();
     expect(await (await fetch(`${r.display}/some/route`)).text()).toContain('face');
     expect((await fetch(`${r.display}/..%2f..%2fetc/passwd`)).status).not.toBe(200);
+  });
+
+  it('serves the display cross-origin isolated, with wasm and module MIME types', async () => {
+    const r = await rig();
+    for (const [path, type] of [['/', 'text/html'], ['/ort/x.wasm', 'application/wasm'], ['/ort/x.mjs', 'text/javascript']]) {
+      const res = await fetch(`${r.display}${path}`);
+      expect(res.headers.get('content-type')).toContain(type);
+      expect(res.headers.get('cross-origin-opener-policy')).toBe('same-origin');
+      expect(res.headers.get('cross-origin-embedder-policy')).toBe('require-corp');
+      expect(res.headers.get('cross-origin-resource-policy')).toBe('same-origin');
+    }
   });
 
   it('ingress refuses anyone but the gateway', async () => {

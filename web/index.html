@@ -2,12 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
     <title>Yanni</title>
-    <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}canvas{display:block;width:100vw;height:100vh}</style>
+    <style>html,body{margin:0;height:100%;background:#000}</style>
   </head>
   <body>
-    <canvas id="face"></canvas>
+    <canvas id="face" role="img" aria-label="Yanni" aria-describedby="face-desc"></canvas>
+    <div id="face-desc" class="sr-only" aria-live="polite"></div>
+    <div id="shell">
+      <button id="owner-menu-button" class="sr-only" type="button">Owner menu</button>
+    </div>
+    <div id="audio-hint" hidden>Tap for sound</div>
+    <div id="error" role="alert" hidden></div>
     <script type="module" src="/src/app/main.ts"></script>
   </body>
 </html>
