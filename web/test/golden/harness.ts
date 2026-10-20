@@ -11,6 +11,7 @@ import {
   AgentState, EdgeAnticContext, FaceCommand, FaceEngine, OneShotKind, OneShotLibrary, defaultModifierOrder,
   makeModifiers, makePersonTarget, type PersonTarget,
 } from '../../src/engine';
+import { LifeCalendar, LifeCycleController, LifeSettings, type LifeSettingsFields } from '../../src/life';
 
 // GOLDEN_FIXTURES overrides the folder (diagnostics against traces recorded elsewhere).
 const FIXTURES = process.env.GOLDEN_FIXTURES ?? join(dirname(fileURLToPath(import.meta.url)), '../../../fixtures/golden');
@@ -96,8 +97,54 @@ export function scenarioRequirements(g: Pick<GoldenFile, 'life' | 'inputs'>): st
   return out;
 }
 
-export function makeEngine(g: GoldenFile): FaceEngine {
-  return new FaceEngine({ seed: BigInt(g.seed), modifiers: makeModifiers(scenarioModifiers(g)) });
+export function makeEngine(g: GoldenFile, modifiers: readonly string[] = scenarioModifiers(g)): FaceEngine {
+  return new FaceEngine({ seed: BigInt(g.seed), modifiers: makeModifiers(modifiers) });
+}
+
+// MARK: - Life (Recorder.swift: a LifeCycleController on a simulated clock)
+
+/// Fields life scenarios add after the frame fields.
+export const lifeFields = ['moodOffset', 'lifePhase', 'lifeIsBedtime', 'lifeIsPresent', 'lifeBoredom', 'lifeIsSinkingToSleep',
+  'lifeIsForceSleepActive', 'lifeIsNightAwake'] as const;
+/// Fixed wall-clock epoch for life scenarios: 2027-01-15 08:00:00 UTC.
+const lifeEpoch = 1_800_000_000;
+
+/// The recorder's controller: default settings, monotonic = `clock.t`, now = epoch + t, Gregorian/GMT.
+export function makeLife(engine: FaceEngine, clock: { t: number }): LifeCycleController {
+  return new LifeCycleController(engine, {
+    clock: { monotonic: () => clock.t, now: () => new Date((lifeEpoch + clock.t) * 1000) },
+    calendar: new LifeCalendar('GMT'),
+  });
+}
+
+/// The life fields of one frame.
+export function recordLifeFields(e: FaceEngine, life: LifeCycleController): GoldenFrame {
+  const o = e.state.moodOffset;
+  return {
+    moodOffset: [o.x, o.y, o.z], lifePhase: life.phase, lifeIsBedtime: life.isBedtime, lifeIsPresent: life.isPresent,
+    lifeBoredom: life.boredom, lifeIsSinkingToSleep: life.isSinkingToSleep,
+    lifeIsForceSleepActive: life.isForceSleepActive, lifeIsNightAwake: life.isNightAwake,
+  };
+}
+
+const LIFE_KEYS = new Set(['minutesToDrowsy', 'minutesToAsleep', 'manualBedtime', 'tapsToWake', 'wakeOnMotionAtBedtime',
+  'bedtimeAwakeMinutes', 'idleMoodDrift', 'aloneTakeoverMinutes']);
+
+function applyLifeInput(life: LifeCycleController | undefined, input: GoldenInput): void {
+  if (!life) throw new Error(`${input.call} without a life-cycle controller`);
+  const a = input.args;
+  switch (input.call) {
+    case 'life.settings': {
+      const kv = obj(a[0]);
+      for (const k of Object.keys(kv)) if (!LIFE_KEYS.has(k)) throw new Error(`unsupported LifeSettings key ${k}`);
+      life.settings = new LifeSettings(kv as Partial<LifeSettingsFields>);
+      break;
+    }
+    case 'life.forceSleep': life.forceSleep(a.length && a[0] !== null ? num(a[0]) : null); break;
+    case 'life.forceWake': life.forceWake(); break;
+    case 'life.noteActivity': life.noteActivity(); break;
+    default: throw new Error(`unsupported call ${input.call}`);
+  }
 }
 
 // MARK: - Inputs (Calls.swift)
@@ -153,9 +200,10 @@ function geometry(j: J): EdgeGeometry {
   });
 }
 
-/// Applies one input to the engine (Calls.swift `apply`). `life.*` calls need FaceLife (not ported yet).
-export function applyInput(e: FaceEngine, input: GoldenInput): void {
+/// Applies one input to the engine, or to `life` for `life.*` calls (Calls.swift `apply`).
+export function applyInput(e: FaceEngine, input: GoldenInput, life?: LifeCycleController): void {
   const a = input.args;
+  if (input.call.startsWith('life.')) { applyLifeInput(life, input); return; }
   switch (input.call) {
     case 'setAgentState': {
       const s = AgentState.fromRaw(String(a[0]));
@@ -188,7 +236,7 @@ export function applyInput(e: FaceEngine, input: GoldenInput): void {
     case 'cancelIdleGames': e.cancelIdleGames(); break;
     case 'noteFriendlyTouch': e.noteFriendlyTouch(num(a[0])); break;
     case 'fadeInFromBlack': e.fadeInFromBlack(); break;
-    default: throw new Error(`unsupported call ${input.call} (life.* needs the FaceLife port)`);
+    default: throw new Error(`unsupported call ${input.call}`);
   }
 }
 
@@ -308,6 +356,10 @@ export interface GoldenOptions {
   maxFrames?: number;
   /// How many trailing inputs a mismatch report lists (default 5).
   contextInputs?: number;
+  /// Run these modifiers instead of the scenario's (diagnostics, and the controller-only life check).
+  modifiers?: readonly string[];
+  /// Compare only these fields (default: every recorded field).
+  fields?: readonly string[];
 }
 
 export interface GoldenResult {
@@ -322,8 +374,9 @@ export interface GoldenResult {
 
 /// Plays the scenario through `onFrame(f, expected, actual)`; stops when it returns false.
 function replay(g: GoldenFile, opts: GoldenOptions, onFrame: (f: number, e: GoldenFrame, a: GoldenFrame) => boolean): number {
-  if (g.life) throw new Error(`${g.scenario}: life scenarios need the FaceLife port`);
-  const engine = makeEngine(g);
+  const engine = makeEngine(g, opts.modifiers);
+  const clock = { t: 0 };
+  const life = g.life ? makeLife(engine, clock) : undefined;
   const byFrame = new Map<number, GoldenInput[]>();
   for (const i of g.inputs) {
     const l = byFrame.get(i.frame);
@@ -332,9 +385,18 @@ function replay(g: GoldenFile, opts: GoldenOptions, onFrame: (f: number, e: Gold
   const n = Math.min(g.frames.length, opts.maxFrames ?? Infinity);
   let f = 0;
   for (; f < n; f++) {
-    for (const i of byFrame.get(f) ?? []) applyInput(engine, i);
-    const fr = engine.tick(g.dt, (f + 1) * g.dt);
-    if (!onFrame(f, g.frames[f], recordFrame(engine, f, fr))) return f + 1;
+    for (const i of byFrame.get(f) ?? []) applyInput(engine, i, life);
+    const host = (f + 1) * g.dt;
+    const fr = engine.tick(g.dt, host);
+    let rec = recordFrame(engine, f, fr);
+    if (life) {
+      clock.t = host;
+      life.afterFrame(host);
+      // oneShots, agentState and mood are read after the controller ran (Recorder.swift step 3).
+      rec = { ...rec, ...recordLifeFields(engine, life), oneShots: [...engine.state.activeOneShots],
+        agentState: engine.state.agentState, mood: [engine.state.mood.pleasure, engine.state.mood.arousal, engine.state.mood.dominance] };
+    }
+    if (!onFrame(f, g.frames[f], rec)) return f + 1;
   }
   return f;
 }
@@ -362,8 +424,9 @@ export function runGolden(name: string, opts: GoldenOptions = {}): GoldenResult 
   const tol = opts.tolerance ?? defaultTolerance;
   const layout = loadLayout();
   let first: Mismatch[] = [];
+  const fields = opts.fields ?? g.fields;
   const count = replay(g, opts, (_f, e, a) => {
-    const ms = compareFrame(e, a, g.fields, tol, layout);
+    const ms = compareFrame(e, a, fields, tol, layout);
     if (ms.length) { first = ms; return false; }
     return true;
   });

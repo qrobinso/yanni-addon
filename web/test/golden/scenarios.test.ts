@@ -7,8 +7,8 @@ import { describe, expect, test } from 'vitest';
 import { isModifierRegistered } from '../../src/engine';
 import { goldenNames, loadGolden, runGolden, scenarioModifiers, scenarioRequirements } from './harness';
 
-/// Ported modules beyond the modifiers and curves (add 'FaceLife' here once WP10 lands and the harness drives it).
-const portedExtras = new Set<string>([]);
+/// Ported modules beyond the modifiers and curves. Life scenarios also need every default modifier (above).
+const portedExtras = new Set<string>(['FaceLife']);
 
 describe('golden scenarios', () => {
   for (const name of goldenNames()) {
