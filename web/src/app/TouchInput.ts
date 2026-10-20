@@ -1,19 +1,14 @@
 // The face's touch surface (port of FaceScreen.swift's FaceTouchSurface / mac press handling). One finger goes to the
-// touch classifier (`TouchGestureRecognizer`, ported by the engine in web/src/engine/TouchGestures.ts) exactly as the
+// touch classifier (`TouchGestureRecognizer`, web/src/engine/TouchGestures.ts) exactly as the
 // app feeds it: begin (excluded in the owner corner) / move / a 30 Hz tick while down / end / cancel. A tap pokes on
 // release (even in the corner); holding the bottom-right corner 2.5 s opens the owner menu instead and cancels the
 // touch, so lifting the finger doesn't also poke. A second finger cancels the touch.
 import type { V2 } from '../core/vec';
+import type { TouchGestureEvent } from '../engine/TouchGestures';
 
-/** `TouchGestureRecognizer.Event` (points, origin top-left). */
-export type TouchGestureEvent =
-  | { kind: 'tap'; at: V2 }
-  /** Where the hold started. */
-  | { kind: 'hold'; at: V2 }
-  /** The finger's position, 0…1 intensity from the stroke rate, and whether this is the scratch's first stroke. */
-  | { kind: 'scratch'; at: V2; intensity: number; began: boolean };
+export type { TouchGestureEvent };
 
-/** The recogniser's API (TouchGestures.swift), structurally. */
+/** The recogniser's API (`TouchGestureRecognizer`), structurally (tests may pass a fake). */
 export interface TouchRecognizer {
   readonly isTracking: boolean;
   begin(at: V2, time: number, excluded?: boolean): void;
@@ -21,41 +16,6 @@ export interface TouchRecognizer {
   tick(time: number): TouchGestureEvent | null | undefined;
   end(at: V2, time: number): TouchGestureEvent | null | undefined;
   cancel(): void;
-}
-
-/** Stand-in until the engine's recogniser lands: tap and hold only (no scratch), same thresholds.
- *  shortcut: no scratch, swap for the engine's TouchGestureRecognizer when it exists. */
-export class TapHoldRecognizer implements TouchRecognizer {
-  static readonly holdDuration = 0.5;
-  static readonly slop = 12;
-  private phase: 'idle' | 'pending' | 'held' | 'moving' | 'excluded' = 'idle';
-  private start: V2 = { x: 0, y: 0 };
-  private startTime = 0;
-  get isTracking(): boolean { return this.phase !== 'idle'; }
-  begin(at: V2, time: number, excluded = false): void {
-    this.phase = excluded ? 'excluded' : 'pending';
-    this.start = { ...at };
-    this.startTime = time;
-  }
-  private strayed(p: V2): boolean { return Math.hypot(p.x - this.start.x, p.y - this.start.y) > TapHoldRecognizer.slop; }
-  move(to: V2): null {
-    if (this.strayed(to) && this.phase !== 'held' && this.phase !== 'idle') this.phase = 'moving';
-    return null;
-  }
-  tick(time: number): TouchGestureEvent | null {
-    if (this.phase !== 'pending' || time - this.startTime < TapHoldRecognizer.holdDuration) return null;
-    this.phase = 'held';
-    return { kind: 'hold', at: { ...this.start } };
-  }
-  end(at: V2, time: number): TouchGestureEvent | null {
-    this.move(at);
-    const phase = this.phase;
-    this.phase = 'idle';
-    if (phase === 'pending') return time - this.startTime >= TapHoldRecognizer.holdDuration ? { kind: 'hold', at: this.start } : { kind: 'tap', at };
-    if (phase === 'excluded') return { kind: 'tap', at };
-    return null;
-  }
-  cancel(): void { this.phase = 'idle'; }
 }
 
 export interface TouchInputCallbacks {

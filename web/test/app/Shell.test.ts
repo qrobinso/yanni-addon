@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { OwnerAccess, type KeyValue } from '../../src/app/OwnerAccess';
-import { TapHoldRecognizer, TouchInput, type TouchGestureEvent } from '../../src/app/TouchInput';
+import { TouchInput, type TouchGestureEvent } from '../../src/app/TouchInput';
+import { TouchGestureRecognizer } from '../../src/engine/TouchGestures';
 
 const memory = (): KeyValue & { m: Map<string, string> } => {
   const m = new Map<string, string>();
@@ -34,7 +35,7 @@ describe('TouchInput', () => {
     const got: TouchGestureEvent[] = [];
     const progress: (number | null)[] = [];
     let menus = 0;
-    const input = new TouchInput(new TapHoldRecognizer(), {
+    const input = new TouchInput(new TouchGestureRecognizer(), {
       onGesture: (e) => got.push(e), onCornerProgress: (p) => progress.push(p), onMenu: () => { menus += 1; },
     });
     return { input, got, progress, menus: () => menus };
