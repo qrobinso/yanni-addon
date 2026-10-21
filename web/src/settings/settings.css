@@ -1,0 +1,52 @@
+/* The kiosk Settings screen (SettingsPanel.ts): a dark grouped form over the face, large touch targets. */
+.ys-layer { position: fixed; inset: 0; z-index: 20; display: flex; justify-content: center; align-items: stretch;
+  background: rgba(0, 0, 0, 0.55); cursor: auto; user-select: text; -webkit-user-select: text; color: #e6e8eb;
+  font: 16px/1.4 system-ui, -apple-system, sans-serif; animation: ys-fade 0.18s ease-out; }
+.ys-sheet { width: min(720px, 100vw); max-height: 100dvh; overflow: auto; overscroll-behavior: contain;
+  background: #15171b; padding: 0 16px 32px; box-sizing: border-box; }
+.ys-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 10px; background: #15171b; }
+.ys-head h2 { margin: 0; font-size: 20px; }
+.ys-section { background: #1f2228; border-radius: 12px; padding: 4px 14px 10px; margin: 0 0 16px; }
+.ys-section h3 { margin: 10px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: #8b93a1; }
+.ys-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: center; padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.ys-row > label, .ys-row > span:first-child { min-width: 0; }
+.ys-row.ys-wide { grid-template-columns: 1fr; }
+.ys-row.ys-off { opacity: 0.45; }
+.ys-input { display: inline-flex; align-items: center; gap: 8px; justify-self: end; }
+.ys-wide .ys-input { justify-self: stretch; flex-direction: column; align-items: stretch; }
+.ys-msg { grid-column: 1 / -1; color: #ffb35c; font-size: 13px; }
+.ys-msg:empty { display: none; }
+.ys-help, .ys-note { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; color: #8b93a1; }
+.ys-note { margin: 10px 0 0; }
+.ys-value { color: #a9b0bc; font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: right; }
+.ys-layer input, .ys-layer select, .ys-layer textarea { font: inherit; color: inherit; background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 8px; min-height: 44px; box-sizing: border-box; min-width: 0; }
+.ys-layer input[type=checkbox] { width: 28px; height: 28px; min-height: 0; accent-color: #5bb3c4; }
+.ys-layer input[type=range] { width: min(240px, 40vw); padding: 0; accent-color: #5bb3c4; }
+.ys-layer input[type=number] { width: 6.5em; }
+.ys-layer input[type=text] { width: min(280px, 50vw); }
+.ys-layer input[type=color] { width: 56px; padding: 2px; }
+.ys-layer input[aria-invalid=true], .ys-layer textarea[aria-invalid=true] { border-color: #ff6b6b; }
+.ys-json { width: 100%; min-height: 9em; font: 12px/1.35 ui-monospace, monospace !important; resize: vertical; }
+.ys-pin { font-size: 28px !important; letter-spacing: 0.4em; text-align: center; width: 6em; }
+.ys-layer button { font: inherit; color: inherit; background: rgba(255, 255, 255, 0.08); border: 0; border-radius: 10px;
+  padding: 10px 16px; min-height: 44px; cursor: pointer; }
+.ys-layer button:disabled { opacity: 0.4; cursor: default; }
+.ys-layer :focus-visible { outline: 2px solid #6cc4ff; outline-offset: 1px; }
+.ys-done { background: #2b6f80 !important; font-weight: 600; }
+.ys-link { background: none !important; color: #6cc4ff; padding: 6px 4px !important; }
+.ys-danger { color: #ff8a8a; }
+.ys-buttons { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+.ys-adv { padding: 6px 0; }
+.ys-adv > summary { cursor: pointer; color: #a9b0bc; padding: 10px 0; min-height: 24px; }
+.ys-snippet { white-space: pre-wrap; font: 12px/1.4 ui-monospace, monospace; color: #a9b0bc; margin: 4px 0; }
+.ys-pinform { display: flex; flex-direction: column; gap: 6px; max-width: 420px; margin: 0 auto; padding-top: 8px; }
+.ys-prompt { background: #24303a; border-radius: 12px; padding: 4px 14px 8px; margin: 12px 0 16px; }
+.ys-prompt h3 { margin: 10px 0 4px; }
+.ys-prompt p { margin: 0; color: #c3c9d2; }
+@keyframes ys-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ys-layer { animation: none; } }
+@media (max-width: 520px) { .ys-row { grid-template-columns: 1fr; } .ys-row.ys-check { grid-template-columns: minmax(0, 1fr) auto; } .ys-input { justify-self: start; } }
+.ys-wide .ys-input .ys-link { align-self: flex-start; }

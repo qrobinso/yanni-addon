@@ -1,27 +1,32 @@
-// The settings model: every owner setting the web display has, with its type, default, range or options, group and
-// label, and the Home Assistant entity for the ones Home Assistant sees. A port of YanniSettings (the iPad's
+// The settings model: every setting the web display has, with its type, default, range or options, group and label,
+// and the Home Assistant entity for the ones Home Assistant sees. A port of YanniSettings (the iPad's
 // `YanniSettings.swift`) flattened into snake_case keys, in the units Home Assistant uses (percent 0–100, minutes,
-// minutes after midnight). Left out on purpose: the Keychain items (tokens, PIN), the iPad's own Home Assistant and
-// broker connection and its Wyoming hosts (the add-on owns those connections), kiosk self-restart (iPad only), custom
-// colours and the developer sections (tuning, emotion, perception), which stay on the display.
+// minutes after midnight). The developer sections (the pinned tuning style, the emotion and perception tunables) stay
+// opaque JSON objects, as in Swift (`DeveloperSection`), decoded by their own subsystems. docs/SETTINGS.md maps every
+// Swift field to its key here; the few left out (the Keychain items, the iPad's own Home Assistant / broker / Wyoming
+// connections, which the add-on owns, and snapshot consent bookkeeping) are listed there with the reason.
 //
 // Shared by the server (validation, MQTT entities, the owner pages) and the web app (defaults): no imports, no Node
 // APIs. The web app imports it as `@yanni/server/settings`.
 
-export type SettingGroup = 'yanni' | 'sleep' | 'sound' | 'look' | 'playfulness' | 'pupils' | 'games' | 'conversation'
-  | 'home' | 'privacy';
+export type SettingGroup = 'yanni' | 'sleep' | 'sound' | 'look' | 'playfulness' | 'pupils' | 'antics' | 'games'
+  | 'conversation' | 'home' | 'privacy' | 'access' | 'kiosk' | 'developer';
 
 export const SETTING_GROUPS: readonly { id: SettingGroup; title: string; note?: string }[] = [
   { id: 'yanni', title: 'Yanni', note: 'Home Assistant shows this display as “Yanni ‹room›”.' },
   { id: 'sleep', title: 'Sleep & bedtime', note: 'The schedule on the display is the reliable bedtime: it works even when Home Assistant is away.' },
   { id: 'sound', title: 'Sound', note: 'Quiet mode keeps Yanni from speaking up on its own; messages wait until it ends. Sounds off silences the chirps, the greeting and the listening sound; Yanni still answers when you talk to it.' },
   { id: 'look', title: 'Look' },
-  { id: 'playfulness', title: 'Playfulness', note: 'Personality is where Yanni’s feelings rest and how strongly it reacts. Antics are Yanni peeking in from the screen edges. With expressive reactions the decision model (HA-Jev) picks how Yanni answers a wave, a stare or a poke; only a few words about the moment go out, never images, names or speech.' },
+  { id: 'playfulness', title: 'Playfulness', note: 'Personality is where Yanni’s feelings rest and how strongly it reacts. Antics are Yanni peeking in from the screen edges. Pupil reactions turn its pupils into stars, hearts or notes. With expressive reactions the decision model (HA-Jev) picks how Yanni answers a wave, a stare or a poke, a moment after its quick reflex; only a few words about the moment go out (the gesture’s name, how many people, how near and how long, Yanni’s mood and the time of day), never images, names or speech. With idle mood drift, Yanni gets a little bored when left alone.' },
   { id: 'pupils', title: 'Pupil reactions', note: 'Yanni reacts only when it is confident enough, and rests between reactions so they stay special.' },
+  { id: 'antics', title: 'Screen-edge antics', note: 'How the antics move and how often each one plays. No combination keeps both eyes fully off screen longer than the hidden limit.' },
   { id: 'games', title: 'Idle games' },
-  { id: 'conversation', title: 'Conversation', note: 'Empty = Home Assistant’s preferred pipeline and agent. In Yanni’s own voice replies are expressive babble: Yanni won’t say information out loud.' },
-  { id: 'home', title: 'Home Assistant' },
-  { id: 'privacy', title: 'Privacy', note: 'Room understanding (camera snapshots) stays unavailable until an encrypted vision path exists.' },
+  { id: 'conversation', title: 'Voice services', note: 'Home Assistant’s connection is managed by the add-on. Empty = Home Assistant’s preferred pipeline and agent; the pipeline picks speech recognition and the speech voice. In Yanni’s own voice replies are expressive babble: Yanni won’t say information out loud. Nothing is sent before someone looks at Yanni. Captions stay on this screen only.' },
+  { id: 'home', title: 'Home Assistant', note: 'Messages from Home Assistant that don’t say when they expire use the time above.' },
+  { id: 'privacy', title: 'Privacy', note: 'Room understanding (camera snapshots) stays unavailable until an encrypted vision path exists. Presence sharing sends only whether someone is here and how many people.' },
+  { id: 'access', title: 'Access', note: 'The PIN is asked before Settings and Tuning; Status is always open. A forgotten PIN can only be cleared with Reset all settings on the display. Developer tools add Tuning to the corner menu.' },
+  { id: 'kiosk', title: 'Kiosk', note: 'Self-restart acts only once you have checked, on this display, that a reload comes back under the kiosk lock.' },
+  { id: 'developer', title: 'Developer', note: 'Tuning state as JSON objects; an empty object means the built-in defaults. The pinned style is kept only while Pin style is on.' },
 ];
 
 /** The Home Assistant entity of a setting (MQTT discovery; the component is the setting's key). */
@@ -34,7 +39,9 @@ export interface HaEntity {
   mode?: 'box' | 'slider';
 }
 
-interface Base { group: SettingGroup; label: string; help?: string; ha?: HaEntity }
+interface Base { group: SettingGroup; label: string; help?: string; ha?: HaEntity;
+  /** Developer-level tunable (Swift: a Tuning panel, not the owner screen): shown folded under "Advanced". */
+  advanced?: boolean }
 export interface BoolDef extends Base { type: 'bool'; default: boolean }
 export interface NumberDef extends Base { type: 'number'; default: number; min: number; max: number; step: number;
   unit?: string; integer?: boolean }
@@ -43,15 +50,21 @@ export interface EnumDef<O extends string = string> extends Base { type: 'enum';
 export interface TextDef extends Base { type: 'text'; default: string; maxLength: number; required?: boolean }
 /** Minutes after midnight (Home Assistant sees HH:MM). */
 export interface TimeDef extends Base { type: 'time'; default: number }
-/** `#rrggbb` (sRGB). */
-export interface ColorDef extends Base { type: 'color'; default: string }
-export type SettingDef = BoolDef | NumberDef | EnumDef | TextDef | TimeDef | ColorDef;
+/** `#rrggbb` (sRGB); with `optional`, '' = the style's own colour (Swift `nil`). */
+export interface ColorDef extends Base { type: 'color'; default: string; optional?: boolean }
+/** An opaque JSON object owned by a developer subsystem (Swift `DeveloperSection`); {} = its defaults. */
+export interface JsonDef extends Base { type: 'json'; default: Readonly<Record<string, unknown>> }
+export type SettingDef = BoolDef | NumberDef | EnumDef | TextDef | TimeDef | ColorDef | JsonDef;
 
 export const REPLY_VOICES = ['Spoken', 'Yanni'] as const;
 export const MOOD_BACKGROUNDS = ['Black', 'Mood', 'Fixed colour'] as const;
 export const PERSONALITIES = ['playful', 'calm', 'bubbly', 'shy'] as const;
 export const THEME_PRESETS = ['inky', 'sticker'] as const;
 export const BEDTIME_SOUNDS = ['off', 'quiet'] as const;
+export const SNAPSHOT_INDICATORS = ['whileSending', 'always'] as const;
+export const DISPLAY_KINDS = ['auto', 'oled', 'lcd', 'miniLED'] as const;
+/** Largest serialised developer section: four of them still fit the display socket's 64 KB frame. */
+export const JSON_SETTING_MAX = 12000;
 
 const bool = (group: SettingGroup, label: string, d: boolean, ha?: HaEntity, help?: string) =>
   ({ type: 'bool', group, label, default: d, ...(ha ? { ha } : {}), ...(help ? { help } : {}) }) as const satisfies BoolDef;
@@ -64,6 +77,11 @@ const pick = <const O extends string>(group: SettingGroup, label: string, d: O, 
 const text = (group: SettingGroup, label: string, maxLength: number, help?: string) =>
   ({ type: 'text', group, label, default: '', maxLength, ...(help ? { help } : {}) }) as const satisfies TextDef;
 const pct = (group: SettingGroup, label: string, d: number, ha?: HaEntity) => num(group, label, d, 0, 100, 1, '%', ha);
+const adv = <D extends SettingDef>(d: D): D => ({ ...d, advanced: true });
+const json = (label: string, help: string) =>
+  ({ type: 'json', group: 'developer', label, default: {}, help, advanced: true }) as const satisfies JsonDef;
+const colour = (group: SettingGroup, label: string, help?: string) =>
+  ({ type: 'color', group, label, default: '', optional: true, ...(help ? { help } : {}) }) as const satisfies ColorDef;
 
 /** Per-game and per-shape keys (camelCase engine names → snake_case setting keys). */
 export const IDLE_GAMES = ['ping_pong', 'basketball', 'juggling', 'yo_yo', 'leapfrog', 'staring_contest',
@@ -73,9 +91,15 @@ export const PUPIL_SHAPES = ['star', 'heart', 'note', 'question', 'exclaim'] as 
 const SHAPE_DEFAULTS: Record<(typeof PUPIL_SHAPES)[number], [number, number]> = {
   star: [1.0, 90], heart: [1.3, 120], note: [1.5, 90], question: [1.0, 75], exclaim: [0.6, 75],
 };
+/** Swift `EdgeAnticSettings` per-antic defaults: weight, cooldown seconds. */
+export const EDGE_ANTICS = ['shy_peek', 'pop_up', 'curious_lean', 'pretend_exit', 'sleepy_sink'] as const;
+const ANTIC_DEFAULTS: Record<(typeof EDGE_ANTICS)[number], [number, number]> = {
+  shy_peek: [1, 150], pop_up: [1, 120], curious_lean: [1.3, 60], pretend_exit: [0.8, 180], sleepy_sink: [1, 60],
+};
 const title = (k: string) => k.replaceAll('_', ' ').replace(/^./, (c) => c.toUpperCase());
 
 type GameKeys<G extends string> = { [K in G as `game_${K}`]: BoolDef } & { [K in G as `game_${K}_weight` | `game_${K}_cooldown`]: NumberDef };
+type AnticKeys<A extends string> = { [K in A as `antic_${K}`]: BoolDef } & { [K in A as `antic_${K}_weight` | `antic_${K}_cooldown`]: NumberDef };
 type ShapeKeys<S extends string> = { [K in S as `pupil_${K}`]: BoolDef } & { [K in S as `pupil_${K}_hold` | `pupil_${K}_cooldown`]: NumberDef };
 
 function games(): GameKeys<(typeof IDLE_GAMES)[number]> {
@@ -86,6 +110,17 @@ function games(): GameKeys<(typeof IDLE_GAMES)[number]> {
     o[`game_${g}_cooldown`] = num('games', `${title(g)}: rest between games`, 180, 30, 1800, 10, 's');
   }
   return o as GameKeys<(typeof IDLE_GAMES)[number]>;
+}
+
+function antics(): AnticKeys<(typeof EDGE_ANTICS)[number]> {
+  const o: Record<string, SettingDef> = {};
+  for (const a of EDGE_ANTICS) {
+    const [weight, cooldown] = ANTIC_DEFAULTS[a];
+    o[`antic_${a}`] = adv(bool('antics', title(a), true));
+    o[`antic_${a}_weight`] = adv(num('antics', `${title(a)}: weight`, weight, 0, 3, 0.1));
+    o[`antic_${a}_cooldown`] = adv(num('antics', `${title(a)}: rest between`, cooldown, 10, 900, 10, 's'));
+  }
+  return o as AnticKeys<(typeof EDGE_ANTICS)[number]>;
 }
 
 function shapes(): ShapeKeys<(typeof PUPIL_SHAPES)[number]> {
@@ -113,7 +148,8 @@ export const SETTINGS_SCHEMA = {
   bedtime_awake_minutes: num('sleep', 'Awake after a night wake', 1, 0.25, 30, 0.25, 'min', { name: 'Bedtime awake minutes', config: true, mode: 'box' }),
   taps_to_wake: num('sleep', 'Taps to wake at bedtime', 3, 1, 6, 1, undefined, { name: 'Taps to wake at bedtime', config: true, mode: 'slider' }, { integer: true }),
   wake_on_motion_at_bedtime: bool('sleep', 'Wake on motion at bedtime', false, { name: 'Wake on motion at bedtime', config: true }),
-  idle_mood_drift: bool('sleep', 'Idle mood drift', true, undefined, 'Left alone, Yanni gets a little bored.'),
+  alone_takeover_minutes: adv(num('sleep', 'Back to the life cycle when alone after', 2, 0.5, 60, 0.5, 'min', undefined,
+    { help: 'Sheepish, confused or holding a message with nobody in view this long: drowsiness and sleep take over again.' })),
 
   // ---- Sound (FaceVoice VoiceSettings, SpeechSettings) ----
   quiet_mode: bool('sound', 'Quiet mode', false, { name: 'Quiet mode', icon: 'mdi:volume-off' }),
@@ -122,6 +158,8 @@ export const SETTINGS_SCHEMA = {
   voice_volume: pct('sound', 'Voice volume', 80, { name: 'Voice volume', mode: 'slider' }),
   listening_sound: bool('sound', 'Listening sound', true),
   bedtime_sounds: pick('sound', 'Sounds at bedtime', 'off', BEDTIME_SOUNDS, undefined, ['Off', 'Quiet']),
+  auto_vocalize: adv(bool('sound', 'Chirp with expressions', true, undefined, 'Vocalize automatically on state changes and face one-shots.')),
+  av_offset: adv(num('sound', 'Audio/video offset', 0, -0.06, 0.06, 0.005, 's', undefined, { help: 'Positive delays the face relative to the sound.' })),
 
   // ---- Conversation (SpeechSettings, VoiceServicesSettings) ----
   reply_voice: pick('conversation', 'Reply voice', 'Spoken', REPLY_VOICES, { name: 'Reply voice', config: true, icon: 'mdi:account-voice' }),
@@ -156,10 +194,23 @@ export const SETTINGS_SCHEMA = {
   mood_background_colour: { type: 'color', group: 'look', label: 'Background colour', default: '#273f61' } satisfies ColorDef,
   colour_bursts: bool('look', 'Colour bursts', true),
   burst_strength: pct('look', 'Burst strength', 100),
+  custom_sclera_colour: colour('look', 'Custom colour: eye white', 'Empty: the style’s own colour.'),
+  custom_crescent_colour: colour('look', 'Custom colour: crescent', 'Empty: the style’s own colour (mood still shifts it).'),
 
   personality: pick('playfulness', 'Personality', 'playful', PERSONALITIES, undefined, ['Playful', 'Calm', 'Bubbly', 'Shy']),
   antics_frequency: num('playfulness', 'Antics: how often', 1, 0.25, 4, 0.05, '×'),
   reaction_budget_per_hour: num('playfulness', 'Reaction budget', 60, 0, 600, 10, '/h', undefined, { integer: true, help: '0 = none.' }),
+  idle_mood_drift: bool('playfulness', 'Idle mood drift', true, undefined, 'Left alone, Yanni gets a little bored.'),
+
+  antics_travel: adv(num('antics', 'Travel', 1, 0.5, 1.5, 0.05, '×')),
+  antics_intensity: adv(num('antics', 'Intensity (squash, stretch, tilt)', 1, 0, 2, 0.05, '×')),
+  antics_timing: adv(num('antics', 'Timing (slower > 1)', 1, 0.8, 1.4, 0.05, '×')),
+  antics_max_hidden: adv(num('antics', 'Longest fully hidden', 1.2, 0.8, 2, 0.05, 's')),
+  antics_greeting_chance: adv(pct('antics', 'Pop-up greeting chance', 35)),
+  antics_post_conversation_chance: adv(pct('antics', 'After a conversation chance', 30)),
+  antics_sleepy_sink_chance: adv(pct('antics', 'Sleepy sink chance', 50)),
+  antics_quiet_at_bedtime: adv(bool('antics', 'No sleepy sink at bedtime', true)),
+  ...antics(),
 
   pupil_intensity: pct('pupils', 'Intensity', 100),
   pupil_min_confidence: num('pupils', 'Minimum confidence', 70, 30, 100, 1, '%'),
@@ -179,14 +230,35 @@ export const SETTINGS_SCHEMA = {
   conversation_agent_id: text('conversation', 'Conversation agent ID', 120, 'HA-Jev’s agent with an LLM fallback is recommended.'),
   jev_config_entry_id: text('conversation', 'HA-Jev entry ID (only with several)', 64),
   ai_task_entity_id: text('conversation', 'AI Task entity for announcements', 120, 'Empty: a short template (“Hey! The laundry is done.”).'),
+  asr_language: { ...text('conversation', 'Speech language', 16, 'For speech recognition and the agent, e.g. en or de.'), default: 'en', required: true } satisfies TextDef,
   thinking_timeout_seconds: num('conversation', 'Thinking timeout', 8, 4, 20, 0.5, 's'),
-  send_mood_note: bool('conversation', 'Send Yanni’s mood to the agent', true),
+  send_mood_note: bool('conversation', 'Send Yanni’s mood to the agent', true, undefined, 'The conversation_context sensor reads “none” while this is off.'),
 
   announcement_expiry_minutes: num('home', 'Announcements expire after (when they don’t say)', 30, 1, 720, 1, 'min'),
+
+  snapshot_indicator: adv(pick('privacy', 'Camera mark while room understanding is on', 'whileSending', SNAPSHOT_INDICATORS,
+    undefined, ['While sending', 'Always'])),
+
+  developer_tools: bool('access', 'Developer tools', false),
+  pin_prompt_shown: adv(bool('access', 'The “set a PIN?” prompt was shown', false)),
+
+  restart_verified: bool('kiosk', 'A reload comes back under the kiosk lock (checked)', false),
+  self_restart_on_hang: bool('kiosk', 'Restart when the face hangs', false),
+  maintenance_restart: bool('kiosk', 'Maintenance restart at night when needed', false, undefined,
+    '03:00–05:00, asleep, nobody in view, only on a leak or low memory.'),
+  oled_background_budget: num('kiosk', 'OLED background brightness budget', 15, 5, 30, 1, '%'),
+  display_kind: adv(pick('kiosk', 'Display kind', 'auto', DISPLAY_KINDS, undefined, ['Automatic', 'OLED', 'LCD', 'Mini-LED'])),
+
+  pin_style: adv(bool('developer', 'Pin style (keep the Tuning style)', false)),
+  tuning_style: json('Pinned render style', 'RenderStyle fields (colours as linear [r, g, b]); kept only while Pin style is on.'),
+  emotion_tunables: json('Emotion tunables', 'EmotionSettings: dynamics, classifier, mapper, authority.'),
+  perception_tunables: json('Perception tunables', 'PerceptionSettings: camera, eye contact, engagement, gestures.'),
+  turn_tunables: json('Listening tunables', 'TurnTunables: voice activity and end-of-turn detection.'),
 } as const;
 
 export type SettingKey = keyof typeof SETTINGS_SCHEMA;
-type ValueOf<D> = D extends { type: 'bool' } ? boolean : D extends EnumDef<infer O> ? O : D extends { type: 'number' | 'time' } ? number : string;
+type ValueOf<D> = D extends { type: 'bool' } ? boolean : D extends EnumDef<infer O> ? O : D extends { type: 'number' | 'time' } ? number
+  : D extends { type: 'json' } ? Record<string, unknown> : string;
 /** Every setting's value (the display and the add-on exchange `Partial<Settings>`). */
 export type Settings = { -readonly [K in SettingKey]: ValueOf<(typeof SETTINGS_SCHEMA)[K]> };
 
@@ -210,10 +282,31 @@ export function isValidSetting(def: SettingDef, v: unknown): boolean {
       return typeof v === 'number' && Number.isFinite(v) && v >= def.min && v <= def.max && (!def.integer || Number.isInteger(v));
     case 'time': return Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 1439;
     case 'enum': return typeof v === 'string' && def.options.includes(v);
-    case 'color': return typeof v === 'string' && /^#[0-9a-f]{6}$/.test(v);
+    case 'color': return typeof v === 'string' && (/^#[0-9a-f]{6}$/.test(v) || (def.optional === true && v === ''));
+    case 'json': return isJsonObject(v);
     case 'text':
       return typeof v === 'string' && v.length <= def.maxLength && !UNSAFE_TEXT.test(v) && (!def.required || v.trim().length > 0);
   }
 }
 
 export const settingDef = (k: SettingKey): SettingDef => SETTINGS_SCHEMA[k] as SettingDef;
+
+/** A plain JSON object (no arrays at the top), at most `JSON_SETTING_MAX` long and 8 levels deep. */
+export function isJsonObject(v: unknown): v is Record<string, unknown> {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+  const deep = (x: unknown, d: number): boolean => {
+    if (x === null || typeof x === 'boolean' || typeof x === 'string') return true;
+    if (typeof x === 'number') return Number.isFinite(x);
+    if (d > 8 || typeof x !== 'object') return false;
+    if (Array.isArray(x)) return x.every((y) => deep(y, d + 1));
+    if (Object.getPrototypeOf(x) !== Object.prototype && Object.getPrototypeOf(x) !== null) return false;
+    return Object.values(x).every((y) => deep(y, d + 1));
+  };
+  if (!deep(v, 0)) return false;
+  try { return JSON.stringify(v).length <= JSON_SETTING_MAX; } catch { return false; }
+}
+
+/** Whether two values of a setting are the same (JSON objects by content). */
+export function sameSetting(def: SettingDef, a: unknown, b: unknown): boolean {
+  return def.type === 'json' ? JSON.stringify(a) === JSON.stringify(b) : Object.is(a, b);
+}

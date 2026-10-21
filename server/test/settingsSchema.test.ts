@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { HA_SETTING_KEYS, isValidSetting, SETTING_DEFAULTS, SETTING_KEYS, settingDef } from '../src/settingsSchema.js';
+import { HA_SETTING_KEYS, isValidSetting, JSON_SETTING_MAX, SETTING_DEFAULTS, SETTING_GROUPS, SETTING_KEYS, settingDef }
+  from '../src/settingsSchema.js';
 import { SETTINGS_CHECKS } from '../src/protocol.js';
 import { entities } from '../src/entities.js';
 
@@ -39,5 +41,50 @@ describe('settings schema', () => {
     expect(SETTINGS_CHECKS.pipeline_id('a‮b')).toBe(false);
     expect(SETTINGS_CHECKS.room('   ')).toBe(false);
     expect(SETTINGS_CHECKS.pupil_pause(Number.NaN)).toBe(false);
+    expect(SETTINGS_CHECKS.custom_sclera_colour('')).toBe(true); // '' = the style's own
+    expect(SETTINGS_CHECKS.mood_background_colour('')).toBe(false);
+    expect(SETTINGS_CHECKS.asr_language('')).toBe(false);
+  });
+
+  it('developer sections take plain JSON objects only, within the size cap', () => {
+    const ok = SETTINGS_CHECKS.emotion_tunables;
+    expect(ok({})).toBe(true);
+    expect(ok({ dynamics: { moodGain: 0.1 }, classifier: { allowList: ['Happiness'] } })).toBe(true);
+    expect(ok([])).toBe(false);
+    expect(ok('{}')).toBe(false);
+    expect(ok({ a: Number.NaN })).toBe(false);
+    expect(ok({ big: 'x'.repeat(JSON_SETTING_MAX) })).toBe(false);
+    let deep: Record<string, unknown> = {};
+    for (let i = 0; i < 12; i++) deep = { d: deep };
+    expect(ok(deep)).toBe(false);
+  });
+
+  it('every group has settings and every setting a known group', () => {
+    const ids = SETTING_GROUPS.map((g) => g.id);
+    for (const k of SETTING_KEYS) expect(ids, k).toContain(settingDef(k).group);
+    for (const g of ids) expect(SETTING_KEYS.some((k) => settingDef(k).group === g), g).toBe(true);
+  });
+});
+
+describe('docs/SETTINGS.md inventory', () => {
+  const doc = readFileSync(new URL('../../docs/SETTINGS.md', import.meta.url), 'utf8');
+  const ported = doc.split('## Ported')[1]!.split('\n## ')[0]!;
+  // The TS key column (third) of each table row, backticked.
+  const keys = ported.split('\n').filter((l) => l.startsWith('| `')).map((l) => /^\|[^|]*\|[^|]*\| `([a-z0-9_]+)` \|/.exec(l)?.[1]);
+
+  it('names a schema key on every row, once', () => {
+    expect(keys.length).toBeGreaterThan(100);
+    for (const k of keys) expect(SETTING_KEYS, String(k)).toContain(k);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('lists every schema key', () => {
+    for (const k of SETTING_KEYS) expect(keys, k).toContain(k);
+  });
+
+  it('marks exactly the Home Assistant settings as entities', () => {
+    const rows = ported.split('\n').filter((l) => l.startsWith('| `'));
+    const ha = rows.filter((l) => !l.trimEnd().endsWith('| — |')).map((l) => /^\|[^|]*\|[^|]*\| `([a-z0-9_]+)` \|/.exec(l)?.[1]);
+    expect(new Set(ha)).toEqual(new Set(HA_SETTING_KEYS));
   });
 });

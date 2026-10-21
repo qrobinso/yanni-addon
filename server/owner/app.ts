@@ -136,7 +136,8 @@ function control(key: SettingKey, def: SettingDef, value: unknown, save: (key: S
   { row: HTMLElement; set(v: unknown): void } {
   const id = `set-${key}`;
   const msg = h('span', { className: 'note', role: 'status', id: `${id}-msg` });
-  let input: HTMLInputElement | HTMLSelectElement;
+  let input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+  let extra: Kid = null;
   let read: () => unknown;
   let set: (v: unknown) => void;
   switch (def.type) {
@@ -169,8 +170,25 @@ function control(key: SettingKey, def: SettingDef, value: unknown, save: (key: S
     }
     case 'color': {
       const i = h('input', { type: 'color', id });
-      read = () => i.value.toLowerCase(); set = (v) => { i.value = String(v); };
+      read = () => i.value.toLowerCase(); set = (v) => { i.value = v ? String(v) : '#000000'; };
+      if (def.optional) {
+        // '' = the display's style colour (no preview here: the style is composed on the display).
+        const note = h('span', { className: 'muted' });
+        const reset = h('button', { type: 'button', onclick: async () => {
+          msg.textContent = 'Saving…'; msg.textContent = (await save(key, '')) ?? 'Saved';
+        } }, 'Use preset');
+        const s0 = set;
+        set = (v) => { s0(v); note.textContent = v ? '' : ' (preset)'; reset.disabled = !v; };
+        extra = h('span', {}, note, ' ', reset);
+      }
       input = i;
+      break;
+    }
+    case 'json': {
+      const t = h('textarea', { id, rows: 5, spellcheck: false, className: 'json' });
+      read = () => { try { return JSON.parse(t.value); } catch { return undefined; } };
+      set = (v) => { t.value = JSON.stringify(v ?? {}, null, 1); };
+      input = t;
       break;
     }
     case 'text': {
@@ -186,7 +204,8 @@ function control(key: SettingKey, def: SettingDef, value: unknown, save: (key: S
     const v = read();
     if (!SETTINGS_CHECKS[key](v)) {
       input.setAttribute('aria-invalid', 'true');
-      msg.textContent = def.type === 'number' ? `Between ${def.min} and ${def.max}${def.integer ? ', whole numbers' : ''}` : 'Not a valid value';
+      msg.textContent = def.type === 'number' ? `Between ${def.min} and ${def.max}${def.integer ? ', whole numbers' : ''}`
+        : def.type === 'json' ? 'Not a JSON object (or too large)' : 'Not a valid value';
       return;
     }
     input.removeAttribute('aria-invalid');
@@ -198,7 +217,7 @@ function control(key: SettingKey, def: SettingDef, value: unknown, save: (key: S
   const unit = def.type === 'number' && def.unit ? h('span', { className: 'muted' }, ` ${def.unit}`) : null;
   const row = def.type === 'bool'
     ? h('div', { className: 'row check' }, input, h('label', { htmlFor: id }, def.label), msg)
-    : h('div', { className: 'row' }, h('label', { htmlFor: id }, def.label), h('span', {}, input, unit), msg);
+    : h('div', { className: def.type === 'json' ? 'row wide' : 'row' }, h('label', { htmlFor: id }, def.label), h('span', {}, input, unit, extra), msg);
   if (def.help) row.append(h('p', { className: 'muted help', id: `${id}-help` }, def.help));
   return { row, set: (v) => { if (document.activeElement !== input) set(v); } };
 }
@@ -214,13 +233,18 @@ async function settingsPage(id: string, picker: HTMLElement): Promise<void> {
       return undefined;
     } catch (e) { return (e as Error).message; }
   };
+  // Every setting, in the display's Settings groups: per-game and per-shape rows and the developer-level tunables
+  // fold away, as on the display.
   const sections = SETTING_GROUPS.map((g) => {
     const keys = SETTING_KEYS.filter((k) => settingDef(k).group === g.id);
-    const top = keys.filter((k) => !/^(game_|pupil_(star|heart|note|question|exclaim))/.test(k));
-    const detailKeys = keys.filter((k) => !top.includes(k));
+    const each = (k: SettingKey) => /^(game_|pupil_(star|heart|note|question|exclaim))/.test(k);
+    const top = keys.filter((k) => !each(k) && !settingDef(k).advanced);
+    const detailKeys = keys.filter((k) => each(k) && !settingDef(k).advanced);
+    const advKeys = keys.filter((k) => settingDef(k).advanced);
     const make = (k: SettingKey) => { const c = control(k, settingDef(k), detail.settings[k], save); controls.set(k, c); return c.row; };
     return h('fieldset', {}, h('legend', {}, g.title), ...top.map(make),
       detailKeys.length ? h('details', {}, h('summary', {}, g.id === 'games' ? 'Each game' : 'Each shape'), ...detailKeys.map(make)) : null,
+      advKeys.length ? h('details', {}, h('summary', {}, top.length ? 'Advanced' : `Show ${advKeys.length} settings`), ...advKeys.map(make)) : null,
       g.note ? h('p', { className: 'muted' }, g.note) : null);
   });
   main.replaceChildren(h('h2', {}, `Settings · Yanni ${detail.device.room}`), picker,

@@ -5,49 +5,29 @@ import { LifeCycleController } from '../../src/life/LifeCycleController';
 import { LifeSettings } from '../../src/life/LifeSettings';
 import { makeRenderStyle } from '../../src/render/RenderStyle';
 
-describe('FaceSettings', () => {
+describe('FaceSettings (partial values: missing keys take the schema defaults)', () => {
   test('nothing synced yet: the Swift defaults (eyebrows on, mood colour full, black background)', () => {
-    expect(lifeSettings({}, new LifeSettings()).equals(new LifeSettings())).toBe(true);
-    const st = composeStyle({}, makeRenderStyle());
+    expect(lifeSettings({}).equals(new LifeSettings())).toBe(true);
+    const st = composeStyle({});
     expect(st.browsEnabled).toBe(true);
     expect(st.moodColorAmount).toBe(1);
     expect(st.backgroundVignette).toBe(makeRenderStyle().backgroundVignette);
   });
 
   test('Home Assistant values land on life, engine and style', () => {
-    const base = new LifeSettings({ idleMoodDrift: false });
-    const l = lifeSettings({ bedtime: true, bedtime_schedule: true, bedtime_start: 1380, minutes_to_drowsy: 0.5,
-      taps_to_wake: 2 }, base);
+    const l = lifeSettings({ bedtime: true, bedtime_schedule: true, bedtime_start: 1380, minutes_to_drowsy: 0.5, taps_to_wake: 2,
+      idle_mood_drift: false });
     expect([l.manualBedtime, l.bedtimeEnabled, l.bedtimeStart, l.minutesToDrowsy, l.tapsToWake, l.idleMoodDrift])
       .toEqual([true, true, 1380, 0.5, 2, false]);
-
     const engine = new FaceEngine();
     applyEngineSettings(engine, { screen_antics: false, pupil_reactions: false, mood_background: 'Fixed colour',
       mood_background_at_bedtime: true, listening_glow: false }, true);
     expect(engine.edgeAnticSettings.enabled).toBe(false);
     expect(engine.pupilReactionSettings).toMatchObject({ enabled: false, reduceMotion: true });
-    expect(engine.moodBackground).toMatchObject({ mode: 'fixed', colourAtBedtime: true, reduceMotion: true });
+    expect(engine.moodBackground).toMatchObject({ mode: 'fixed', colourAtBedtime: true, reduceMotion: true, fixedColor: { x: 0.02, y: 0.05, z: 0.12 } });
     expect(engine.listeningGlow).toMatchObject({ enabled: false, reduceMotion: true });
-
-    const st = composeStyle({ eyebrows: false, mood_colour_strength: 40, mood_background: 'Mood' }, makeRenderStyle());
+    const st = composeStyle({ eyebrows: false, mood_colour_strength: 40, mood_background: 'Mood' });
     expect([st.browsEnabled, st.moodColorAmount, st.backgroundVignette, st.backgroundVignetteInner]).toEqual([false, 0.4, 0.15, 0.45]);
-    expect(composeStyle({ mood_colour: false }, makeRenderStyle()).moodColorAmount).toBe(0);
-  });
-
-  test('owner-page values land on the engine and the style (games, pupil shapes, background, preset)', () => {
-    const engine = new FaceEngine();
-    applyEngineSettings(engine, { antics_frequency: 2, game_yo_yo: false, game_hula_hoop_weight: 2.5, pupil_heart: false,
-      pupil_intensity: 50, mood_background_strength: 40, mood_background_colour: '#ff0000', brow_intensity: 0.5 }, false);
-    expect(engine.edgeAnticSettings.frequency).toBe(2);
-    expect(engine.idleGameSettings.yoYo.enabled).toBe(false);
-    expect(engine.idleGameSettings.hulaHoop.weight).toBe(2.5);
-    expect(engine.pupilReactionSettings.heart.enabled).toBe(false);
-    expect(engine.pupilReactionSettings.intensity).toBe(0.5);
-    expect(engine.moodBackground.strength).toBe(0.4);
-    expect(engine.moodBackground.fixedColor).toEqual({ x: 1, y: 0, z: 0 });
-    expect(engine.browIntensity).toBe(0.5);
-    const st = composeStyle({ theme_preset: 'sticker', ink_brows: true, mood_background: 'Mood', mood_background_vignette: 30 }, makeRenderStyle());
-    expect([st.rimWidth, st.inkWidth, st.browInk, st.backgroundVignette]).toEqual([0.35, 1.3, true, 0.3]);
   });
 
   test('reports snake-case states and only what changed', () => {

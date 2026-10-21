@@ -255,9 +255,9 @@ const OWNER_HEADERS = {
 };
 
 /** A JSON body only (a cross-site form can't send application/json without a CORS preflight, which is never granted). */
-async function readJson(req: IncomingMessage): Promise<any> {
+async function readJson(req: IncomingMessage, limit?: number): Promise<any> {
   if (!/^application\/json\b/i.test(req.headers['content-type'] ?? '')) throw Object.assign(new Error('JSON required'), { status: 415 });
-  return readBody(req);
+  return readBody(req, limit);
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -301,7 +301,8 @@ export function createIngressServer(deps: AppDeps, ownerRoot: string, trusted: s
         return send(res, 200, { ok: true });
       }
       if (d && m![2] === '/settings' && req.method === 'PUT') {
-        const body = await readJson(req);
+        // A developer section (JSON_SETTING_MAX) fits.
+        const body = await readJson(req, 32 * 1024);
         const values = body?.values;
         if (!isObj(values) || !Object.keys(values).length) return send(res, 400, { error: 'values required' });
         for (const [k, v] of Object.entries(values)) {

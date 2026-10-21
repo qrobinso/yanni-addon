@@ -30,3 +30,5 @@ dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 
 pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px; overflow-x: auto; font-size: 13px; }
 code { font-size: 13px; overflow-wrap: anywhere; }
 li { margin: 4px 0; }
+.row.wide { grid-template-columns: 1fr; }
+textarea.json { font: 12px/1.35 ui-monospace, monospace; min-height: 6em; resize: vertical; }

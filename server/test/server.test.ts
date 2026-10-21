@@ -7,6 +7,7 @@ import WebSocket from 'ws';
 import { createDisplayServer, createIngressServer } from '../src/server.js';
 import { Devices, SettingsStore } from '../src/store.js';
 import { redactUrl } from '../src/mqtt.js';
+import { SETTING_DEFAULTS } from '../src/settingsSchema.js';
 
 let close: (() => void)[] = [];
 afterEach(() => { close.forEach((f) => f()); close = []; });
@@ -111,6 +112,22 @@ describe('owner pages (ingress)', () => {
     expect(got.device.room).toBe('Den');
     expect(got.settings).toMatchObject({ sounds: false, game_yo_yo: false, chirp_volume: 70 }); // defaults fill in
     expect(got.status).toMatchObject({ online: true, appVersion: '0.1.0' });
+  });
+
+  it('takes every setting in the hello, and developer sections larger than a small body from the owner pages', async () => {
+    const r = await rig();
+    const { room: _room, ...all } = SETTING_DEFAULTS;
+    const d = await paired(r, { ...all, custom_crescent_colour: '#ff8800', developer_tools: true });
+    const u = `${r.ingress}/api/devices/${d.id}/settings`;
+    const tunables = { dynamics: { moodGain: 0.1 }, classifier: { allowList: Array.from({ length: 400 }, (_, i) => `Expression${i}`) } };
+    expect(JSON.stringify(tunables).length).toBeGreaterThan(4096);
+    const ok = await put(u, { values: { emotion_tunables: tunables, custom_sclera_colour: '' } });
+    expect(ok.status).toBe(200);
+    expect(await d.next()).toEqual({ type: 'settings', values: { emotion_tunables: tunables }, origin: 'owner' });
+    const got = await (await fetch(`${r.ingress}/api/devices/${d.id}`)).json();
+    expect(got.settings).toMatchObject({ emotion_tunables: tunables, custom_crescent_colour: '#ff8800', developer_tools: true,
+      perception_tunables: {}, antic_pop_up_cooldown: 120 });
+    expect((await put(u, { values: { tuning_style: [] } })).status).toBe(400);
   });
 
   it('keeps the latest state report for the Status page', async () => {
