@@ -97,6 +97,30 @@ Perception runs in a worker and posts people, engagement and gestures to the coo
 - `ha.call` relay requests
 - binary STT audio
 
+## CI, releases and installing
+- **Repo:** https://github.com/qrobinso/yanni-addon (public, Apache 2.0). `main` is the release branch.
+- **CI** (`.github/workflows/ci.yml`) runs on every push and PR: `npm ci`, model fetch (cached), both typechecks, `npm test`, `npm run build`. Keep it green. Check it with `gh run list -R qrobinso/yanni-addon` and `gh run view <id> --log-failed`.
+- **Releasing:**
+  1. Bump `version` in `addon/config.yaml` and add a `CHANGELOG.md` entry.
+  2. Commit and push to `main`, then wait for CI to go green.
+  3. Push a matching tag: `git tag -a v0.1.1 -m "Yanni 0.1.1" && git push origin v0.1.1`.
+
+  `.github/workflows/release.yml` refuses a tag that doesn't match `config.yaml`. It runs the tests, runs `scripts/stage-addon.sh`, and pushes `ghcr.io/qrobinso/{amd64,aarch64}-addon-yanni:<version>` (plus `:latest`). Home Assistant pulls them through `image:` in `config.yaml`. The packages are public; check with an anonymous manifest fetch if in doubt.
+- **Don't reuse a published tag.** Moving a tag is only acceptable when its release failed before any image was pushed. Otherwise bump the version.
+- **Never commit `addon/rootfs/app`.** The stage is gitignored and lives only inside the images.
+- **Installing** (for the owner or a tester):
+  1. In Home Assistant, go to Settings → Add-ons → Add-on Store → ⋮ → Repositories.
+  2. Add `https://github.com/qrobinso/yanni-addon`, install **Yanni**, start it, and turn on Show in sidebar.
+  3. Pair the tablet from the sidebar page.
+
+  It needs Mosquitto plus the MQTT integration for the entities. Put an HTTPS certificate (`fullchain.pem` and `privkey.pem`) in `/ssl` so the tablet gets camera and mic access on port 8443.
+- **CI-only test settings** (`web/vite.config.ts` and `web/test/setup.ts`):
+  - Every test yields a macrotask afterwards, so Vitest's worker RPC isn't starved by long synchronous sweeps ("Timeout calling onTaskUpdate").
+  - `testTimeout` is 60 s in CI, because the runners are about 3× slower.
+  - The onnxruntime model tests run single-threaded in node.
+
+  Keep all three. Don't "fix" a CI timeout by weakening an assertion.
+
 ## Testing: the reference traces are the contract
 - `fixtures/golden/*.json.gz` hold per-frame `FaceFrame` output for scripted scenarios: every one-shot, idle game and antic, the agent-state tours, mood sweeps, touch, 10-minute idle runs, life-cycle runs, plus emotion and voice traces in subfolders.
 - `web/test/golden/harness.ts` replays each scenario's input script against the TS engine and compares every field with tolerance. A failure names the first diverging frame, field and lane.
