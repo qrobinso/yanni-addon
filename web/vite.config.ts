@@ -27,5 +27,6 @@ export default defineConfig({
   worker: { format: 'es' },
   server: { headers: isolation },
   preview: { headers: isolation },
-  test: { include: ['test/**/*.test.ts'], setupFiles: ['test/setup.ts'] },
+  // CI runners are ~3x slower than a dev Mac; the geometry sweeps need more than Vitest's 5 s default there.
+  test: { include: ['test/**/*.test.ts'], setupFiles: ['test/setup.ts'], testTimeout: process.env.CI ? 60_000 : 5_000 },
 });
