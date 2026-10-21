@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yanni tuning</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; color: #e6e8eb; overflow: hidden; font: 13px system-ui, sans-serif; }
+  #face { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  #error { position: fixed; left: 8px; bottom: 8px; color: #ff8a8a; }
+  #reopen { position: fixed; left: 8px; bottom: 8px; font: inherit; color: #ccc; background: rgba(255,255,255,.08); border: 0; border-radius: 8px; padding: 6px 10px; }
+  .hud { position: fixed; top: 8px; left: 8px; padding: 6px 9px; border-radius: 8px; background: rgba(0,0,0,.55); color: rgba(255,255,255,.75);
+    font: 12px/1.45 ui-monospace, monospace; white-space: pre; pointer-events: none; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="face" aria-label="Yanni's face"></canvas>
+<button id="reopen" type="button">Tuning</button>
+<div id="error" role="alert"></div>
+<script type="module" src="/src/preview/tuningDemo.ts"></script>
+</body>
+</html>
