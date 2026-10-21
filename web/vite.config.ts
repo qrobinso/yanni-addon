@@ -27,6 +27,5 @@ export default defineConfig({
   worker: { format: 'es' },
   server: { headers: isolation },
   preview: { headers: isolation },
-  // CI runners have 4 slow cores: the long geometry sweeps starve Vitest's worker RPC ("Timeout calling onTaskUpdate").
-  test: { include: ['test/**/*.test.ts'], ...(process.env.CI ? { maxWorkers: 2, minWorkers: 1 } : {}) },
+  test: { include: ['test/**/*.test.ts'], setupFiles: ['test/setup.ts'] },
 });
