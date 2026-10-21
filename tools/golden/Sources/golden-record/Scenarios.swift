@@ -201,5 +201,7 @@ private func send(_ sec: Double, _ c: String, _ fields: [(String, J)] = []) -> I
     variant("idle-10min", "wp6-", wp6, seconds: 300)
     for n in ["glow-caption", "mood-sweep", "touch", "states-tour"] { variant(n, "wp7-", wp7) }
     variant("idle-10min", "wp7-", wp7, seconds: 120)
+    list += emotionScenarios()
+    list += voiceScenarios()
     return list
 }

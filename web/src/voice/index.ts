@@ -1,0 +1,25 @@
+// FaceVoice public surface (port of Packages/YanniFace/Sources/FaceVoice).
+export * from './model/VoiceFingerprint';
+export * from './model/VoiceModel';
+export * from './generate/VoiceRNG';
+export * from './generate/PentatonicSnap';
+export * from './generate/EmotionMapping';
+export * from './generate/Novelty';
+export * from './generate/ReactionTemplates';
+export * from './generate/PhraseShaping';
+export * from './generate/PhraseGenerator';
+export * from './generate/PhraseGenerator+Babble';
+export * from './generate/BabbleShaping';
+export * from './generate/BabbleShaping+Melody';
+export * from './generate/SyllableCounter';
+export * from './generate/LaughFit';
+export * from './generate/ReactionTables';
+export * from './dsp/VoiceDSP';
+export * from './dsp/PhraseRing';
+export * from './dsp/PhraseVoice';
+export * from './dsp/VoiceRenderer';
+export * from './host/VoiceOutput';
+export * from './bridge/ReplyBabble';
+export * from './bridge/VoiceDirector';
+export * from './bridge/VoiceDirector+LaughFit';
+export { ReplyConstants } from './bridge/VoiceDirector+Reply';

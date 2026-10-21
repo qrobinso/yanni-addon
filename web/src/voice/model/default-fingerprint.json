@@ -1,0 +1,21 @@
+{
+  "basePitchHz": 660,
+  "breathDB": -26,
+  "brightness": 0.6,
+  "fm": 0.6,
+  "fmIndexPeak": 3,
+  "fmIndexSustain": 0.8,
+  "fmRatio": 1,
+  "formantAmount": 0.5,
+  "glideEase": 0.6,
+  "loudness": 0.7,
+  "maxPitchHz": 1600,
+  "rangeSemitones": 12,
+  "scaleSnap": 0.6,
+  "scoop": 1.2,
+  "sine": 0.4,
+  "square": 0,
+  "vibratoDepthSemitones": 0.2,
+  "vibratoRateHz": 6.2,
+  "vowel": 0.5
+}

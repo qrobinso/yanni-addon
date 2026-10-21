@@ -12,6 +12,8 @@ let package = Package(
             .product(name: "FaceEngine", package: "YanniFace"),
             .product(name: "FaceModel", package: "YanniFace"),
             .product(name: "FaceLife", package: "YanniFace"),
+            .product(name: "FaceEmotion", package: "YanniFace"),
+            .product(name: "FaceVoice", package: "YanniFace"),
             // Only for EdgeGeometry.fitting (the app's own edge geometry); the result goes into the script as numbers.
             .product(name: "FaceRendering", package: "YanniFace"),
         ]),
