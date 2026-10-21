@@ -19,7 +19,11 @@ function rig(startMic: () => Promise<void> = async () => {}) {
     stopMic: () => calls.push('stopMic'),
     flushPlayout: () => calls.push('flush'),
     hostTime: (t: number) => t,
-    playPcm: (s: Float32Array, rate: number) => ({ start: now + 0.02, end: now + 0.02 + s.length / rate }),
+    played: [] as Float32Array[],
+    playPcm(s: Float32Array, rate: number) { this.played.push(s); return { start: now + 0.02, end: now + 0.02 + s.length / rate }; },
+    outputGain: { gain: { value: 1, cancelScheduledValues: (t: number) => calls.push(`cancel ${t}`),
+      setValueAtTime: (v: number, t: number) => calls.push(`set ${v} ${t}`),
+      linearRampToValueAtTime: (v: number, t: number) => calls.push(`ramp ${v} ${t.toFixed(5)}`) } },
   };
   const asr = new AsrAudioTap();
   const engine = new ConversationAudioEngine(fake as unknown as ConversationAudio, asr, () => now);
@@ -56,6 +60,18 @@ describe('ConversationAudioEngine', () => {
     r.engine.drainSpeechLevels((l, t) => drained.push([l, t]));
     expect(drained.length).toBeLessThan(20);
     expect(r.calls).toContain('flush');
+  });
+
+  test('voice volume ramps on the output gain node across one render quantum; the audio itself is never scaled', () => {
+    const r = rig();
+    r.engine.setPlayoutGain(0.5);
+    expect(r.calls).toEqual(['cancel 0', 'set 1 0', `ramp 0.5 ${(128 / 48000).toFixed(5)}`]);
+    r.engine.setPlayoutGain(0.5);
+    expect(r.calls.length).toBe(3);
+    const tone = new Float32Array(480).fill(0.25);
+    void r.engine.playout.enqueue(tone);
+    expect(r.fake.played.length).toBeGreaterThan(0);
+    expect(r.fake.played.every((p) => p.every((v) => v === 0.25))).toBe(true);
   });
 
   test('a refused microphone leaves conversation mode output-only and ready', async () => {

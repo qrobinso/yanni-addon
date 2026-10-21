@@ -60,7 +60,8 @@ async function copyRuntime() {
   const dist = dirname(createRequire(import.meta.url).resolve('onnxruntime-web/ort-wasm-simd-threaded.wasm'));
   const out = join(pub, 'ort');
   await mkdir(out, { recursive: true });
-  const files = (await readdir(dist)).filter((f) => /^ort-wasm-simd-threaded\.(jsep\.)?(wasm|mjs)$/.test(f));
+  // Only the JSEP build: the plain ort.min.mjs entry (vite.config.ts) loads nothing else.
+  const files = (await readdir(dist)).filter((f) => /^ort-wasm-simd-threaded\.jsep\.(wasm|mjs)$/.test(f));
   for (const f of files) await copyFile(join(dist, f), join(out, f));
   console.log(`copied  ${files.length} onnxruntime-web runtime files to public/ort/`);
 }

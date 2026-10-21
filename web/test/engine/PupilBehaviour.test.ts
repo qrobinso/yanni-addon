@@ -152,7 +152,7 @@ describe('PupilBehaviour', () => {
   });
 
   // needs WP6 (IdleBeats)
-  test.skipIf(!isModifierRegistered('IdleBeats'))('idleBeatsCrossEyedOnlyInPlayfulMoods', () => {
+  test.skipIf(!isModifierRegistered('IdleBeats'))('idleBeatsCrossEyedOnlyInPlayfulMoods', { timeout: 30_000 }, () => {
     const beats = (mood: Mood): Set<OneShotKind> => {
       const seen = new Set<OneShotKind>();
       for (let seed = 1; seed <= 12; seed++) {

@@ -85,7 +85,17 @@ export class ConversationAudioEngine implements ConversationAudioControl {
 
   // MARK: Reply playout
 
-  setPlayoutGain(gain: number): void { this.gain = Number.isFinite(gain) ? Math.min(Math.max(gain, 0), 1) : 0; }
+  /** Voice volume on the output gain node, ramped linearly across one render quantum from the current value (the
+   *  iPad's PlayoutTap ramps across one render buffer: no zipper noise, and a change mid-reply lands at once). */
+  setPlayoutGain(gain: number): void {
+    const v = Number.isFinite(gain) ? Math.min(Math.max(gain, 0), 1) : 0;
+    if (v === this.gain) return;
+    this.gain = v;
+    const ctx = this.audio.context, g = this.audio.outputGain.gain, now = ctx.currentTime;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(v, now + 128 / ctx.sampleRate);
+  }
 
   armReplyStart(epoch: number): void { this.playout.armReplyStart(epoch); }
   playoutSnapshot(): PlayoutSnapshot { return this.playout.playoutSnapshot(); }
@@ -126,12 +136,9 @@ export class ConversationAudioEngine implements ConversationAudioControl {
     return Math.min(Math.max((20 * Math.log10(rms) + 50) / 40, 0), 1);
   }
 
-  /** Measures the envelope before the gain, then schedules the scaled audio.
-   *  shortcut: the gain applies per enqueued chunk (the iPad ramps it per render buffer); a volume change mid-chunk
-   *  lands on the next chunk. Upgrade if ConversationAudio exposes its playout gain node. */
+  /** Schedules the audio (the output gain node applies the volume) and measures its envelope. */
   private playPcm(samples: Float32Array, rate: number): { start: number; end: number } {
-    const scaled = this.gain === 1 ? samples : samples.map((s) => s * this.gain);
-    const span = this.audio.playPcm(scaled, rate);
+    const span = this.audio.playPcm(samples, rate);
     const hop = Math.max(1, Math.round(ConversationAudioEngine.envelopeHop * rate));
     for (let i = 0; i < samples.length; i += hop) {
       const end = Math.min(i + hop, samples.length);

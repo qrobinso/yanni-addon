@@ -15,7 +15,7 @@ type AnyCanvas = HTMLCanvasElement | OffscreenCanvas;
 ///
 /// - **Uniforms:** one 1264-byte uniform buffer, written each frame from a reused Float32Array with
 ///   `queue.writeBuffer` (WebGPU copies on submit, so the ring of four buffers the Metal renderer needs is not needed).
-/// - **Sizing:** an `HTMLCanvasElement` is kept at its CSS size × `devicePixelRatio` (checked every frame, so a resize
+/// - **Sizing:** an `HTMLCanvasElement` is kept at its CSS size × `devicePixelRatio` × `renderScale` (checked every frame, so a resize
 ///   or rotation needs no event wiring); an `OffscreenCanvas` keeps the size its owner gives it.
 /// - **Device loss:** the renderer re-initialises itself on the same canvas; `render` returns false until it is back.
 /// - The per-frame path reuses the uniform object, the packed array and the resolved style (geometry temporaries
@@ -31,6 +31,13 @@ export class FaceRenderer {
   deviceLosses = 0;
   /// Called after a lost device came back.
   onRestored: (() => void) | undefined;
+
+  /// Drawable scale relative to the screen's (Swift FaceRenderControl.renderScale): 1 normal, 0.8 at governor level 3
+  /// (the compositor scales the canvas up). Clamped to 0.5…1; the next frame resizes the backing store.
+  get renderScale(): number { return this.scale; }
+  set renderScale(v: number) { this.scale = Math.min(Math.max(Number.isFinite(v) ? v : 1, 0.5), 1); }
+  static readonly reducedRenderScale = 0.8;
+  private scale = 1;
 
   private canvas: AnyCanvas | undefined;
   private context: GPUCanvasContext | undefined;
@@ -108,11 +115,11 @@ export class FaceRenderer {
     return p;
   }
 
-  /// Keeps an HTMLCanvasElement's drawable at CSS size × devicePixelRatio. Returns the drawable size.
+  /// Keeps an HTMLCanvasElement's drawable at CSS size × devicePixelRatio × renderScale. Returns the drawable size.
   resize(): { width: number; height: number } {
     const c = this.canvas;
     if (c && typeof HTMLCanvasElement !== 'undefined' && c instanceof HTMLCanvasElement) {
-      const dpr = globalThis.devicePixelRatio || 1;
+      const dpr = (globalThis.devicePixelRatio || 1) * this.scale;
       const w = Math.max(1, Math.round(c.clientWidth * dpr)), h = Math.max(1, Math.round(c.clientHeight * dpr));
       if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
     }

@@ -5,6 +5,7 @@ import type { AppContext } from '../app/AppContext';
 import { DevStatusModel, StatusLevel, type StatusCard, type StatusKioskPort } from './DevStatus';
 import { EventLogView, type EventSource, type LoggedEvent } from './EventLog';
 import { button, h, Poller, swatch, toggle } from './ui';
+import { perceptionKeepsButtons } from './perception/PerceptionKeepsCard';
 
 const CATEGORY_COLOR: Record<string, string> = {
   Face: '#5ad1e6', Life: '#bf8cff', Voice: '#ff8fc8', Touch: '#ffb35c', People: '#7be08f', Emotion: '#f5d76e', HA: '#4fd1c5',
@@ -56,9 +57,10 @@ export class StatusPage {
       kiosk?.exportDiagnostics ? button('Export diagnostics', () => void kiosk.exportDiagnostics!()) : null,
       kiosk?.burnInRefresh ? button('Burn-in refresh', () => void kiosk.burnInRefresh!()) : null,
       ctx.harness ? button('Wrong reaction', () => { ctx.harness?.wrongReaction(); }) : null);
+    const keepsButtons = ctx.harness ? perceptionKeepsButtons(ctx.harness, this.poll) : null;
     const logCard = h('article', { class: 'pv-card' },
       h('header', {}, h('span', { class: 'pv-dot running' }), h('b', {}, 'Event log'), this.logDetail), this.chips, this.logList);
-    this.el = h('div', { class: 'pv-body' }, hud, kioskButtons, this.cards, logCard);
+    this.el = h('div', { class: 'pv-body' }, hud, kioskButtons, keepsButtons, this.cards, logCard);
     this.poll.add(() => this.refresh());
   }
 

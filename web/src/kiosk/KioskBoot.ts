@@ -39,7 +39,8 @@ export class KioskBoot {
   readonly os: string;
   private gpu: string | null = null;
   private readonly browser: BrowserEnv;
-  private readonly overrides: DeviceOverrides;
+  private overrides: DeviceOverrides;
+  private fps: number | null;
   private readonly backlightOverride: boolean | null;
 
   constructor(o: KioskBootOptions) {
@@ -51,6 +52,7 @@ export class KioskBoot {
     this.bootTime = LaunchGuard.sessionStamp(session, this.launchedAt.getTime() / 1000);
     this.browser = o.browser ?? DeviceProbe.env();
     this.overrides = o.overrides ?? {};
+    this.fps = o.maxFramesPerSecond ?? null;
     this.backlightOverride = o.backlightFollowsSleep ?? null;
     this.profile = browserProfile(this.browser, { maxFramesPerSecond: o.maxFramesPerSecond, overrides: this.overrides });
     this.defaults = KioskBoot.defaultsFor(this.profile, this.backlightOverride);
@@ -83,7 +85,22 @@ export class KioskBoot {
   refreshDisplayProbe(fps: number | null, gpu: string | null = this.gpu): boolean {
     this.gpu = gpu;
     if (fps === null || !(fps > 0)) return false;
-    const p = browserProfile(this.browser, { maxFramesPerSecond: fps, gpu, overrides: this.overrides });
+    this.fps = fps;
+    return this.remake();
+  }
+
+  /// The owner's display kind (Settings → Kiosk, `display_kind`; null = the device table) changed after launch:
+  /// re-make the profile and defaults as the launch would have (Swift reads it at launch only; a paired display gets
+  /// the add-on's value after launch). Returns whether anything changed.
+  setDisplayOverride(display: DeviceOverrides['display'] | null): boolean {
+    if ((this.overrides.display ?? null) === display) return false;
+    const { display: _old, ...rest } = this.overrides;
+    this.overrides = display ? { ...rest, display } : rest;
+    return this.remake();
+  }
+
+  private remake(): boolean {
+    const p = browserProfile(this.browser, { maxFramesPerSecond: this.fps, gpu: this.gpu, overrides: this.overrides });
     if (JSON.stringify(p) === JSON.stringify(this.profile)) return false;
     this.profile = p;
     this.defaults = KioskBoot.defaultsFor(p, this.backlightOverride);

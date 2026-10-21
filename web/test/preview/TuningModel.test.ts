@@ -135,16 +135,28 @@ describe('EventCollector', () => {
     const ctx = makeContext();
     const lines: [string, string][] = [];
     const c = new EventCollector(ctx, { log: (cat, t) => lines.push([cat, t]) });
-    ctx.clock.addAfterFrame(() => c.afterFrame());
+    ctx.clock.addAfterFrame((t) => c.afterFrame(t));
     ctx.engine.setAgentState('noticing');
     ctx.engine.send({ kind: 'playOneShot', oneShot: 'perkUp' });
     ctx.step(3);
     ctx.engine.setPeople([{ id: 7, position: { x: 0, y: 0 }, distance: 1.2, salience: 1, facing: 1, lookingAtMe: 0 }], 7);
     c.drain();
     const text = lines.map(([k, t]) => `${k}: ${t}`);
-    expect(text).toContain('Face: state → noticing');
-    expect(text).toContain('Face: one-shot perkUp');
+    expect(text.filter((t) => t.startsWith('Face: state idle → noticing (was ')).length).toBe(1);
+    expect(text.filter((t) => t.startsWith('Face: one-shot perkUp (rate ')).length).toBe(1);
     expect(text.some((t) => t.startsWith('People: person 7 entered'))).toBe(true);
     expect(text).toContain('People: engaged: none → 7');
+  });
+
+  test('with the kiosk recording frame events the collector records none (each event once)', () => {
+    const ctx = makeContext();
+    const lines: string[] = [];
+    const c = new EventCollector(ctx, { log: (cat, t) => lines.push(`${cat}: ${t}`) }, false);
+    ctx.clock.addAfterFrame((t) => c.afterFrame(t));
+    ctx.engine.setAgentState('noticing');
+    ctx.step(3);
+    c.drain();
+    expect(c.recorder).toBeNull();
+    expect(lines.some((l) => l.includes('state '))).toBe(false);
   });
 });

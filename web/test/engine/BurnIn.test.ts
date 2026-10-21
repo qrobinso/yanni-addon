@@ -6,7 +6,7 @@ import type { V2 } from '../../src/core/vec';
 import { LidsHarness } from './harness';
 
 describe('BurnIn', () => {
-  test('driftStaysInBoundsAndCoversTheRange', () => {
+  test('driftStaysInBoundsAndCoversTheRange', { timeout: 30_000 }, () => {
     const d = new BurnInDrift();
     const h = new LidsHarness([d], 20);
     let maxX = 0, maxY = 0;

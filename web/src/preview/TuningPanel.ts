@@ -49,7 +49,7 @@ export class TunePage {
   constructor(readonly m: TuningModel) {
     const ctx = m.ctx;
     this.background = new BackgroundPreview(m, (mood) => { m.mood = mood; });
-    this.emotion = ctx.emotion ? new EmotionPreview(m, ctx.emotion) : null;
+    this.emotion = ctx.emotion ? EmotionPreview.for(m, ctx.emotion) : null;
     this.expressive = ctx.emotion ? new ExpressivePreview(ctx.emotion, ctx.expressive ?? null) : null;
     this.sound = ctx.voice ? new SoundPreview(m, ctx.voice) : null;
     this.reply = ctx.voice ? new ReplyBabblePreview(ctx.voice) : null;
@@ -72,7 +72,6 @@ export class TunePage {
     for (const d of this.disposers) d();
     this.disposers = [];
     this.background.stopCycling();
-    this.emotion?.stop();
     this.m.dispose();
   }
 

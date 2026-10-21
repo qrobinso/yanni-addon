@@ -23,7 +23,9 @@ export class ConversationAudio {
   private source: MediaStreamAudioSourceNode | null = null;
   private node: AudioWorkletNode | null = null;
   private sink: GainNode | null = null;
+  /** Barge-in's fade (`flushPlayout`), reset to 1 for each queued chunk. */
   private playoutGain: GainNode | null = null;
+  private output: GainNode | null = null;
   private playoutEnd = 0;
   private sources = new Set<AudioBufferSourceNode>();
 
@@ -34,9 +36,17 @@ export class ConversationAudio {
     if (!this.ctx) {
       this.ctx = new AudioContext({ latencyHint: 'interactive' });
       this.playoutGain = this.ctx.createGain();
-      this.playoutGain.connect(this.ctx.destination);
+      this.output = this.ctx.createGain();
+      this.playoutGain.connect(this.output).connect(this.ctx.destination);
     }
     return this.ctx;
+  }
+
+  /** The reply playout's voice volume, after the fade and after every measurement (`playPcm`'s loud spans and the
+   *  speech envelope stay pre-gain, as the iPad's PlayoutTap measures before its gain). */
+  get outputGain(): GainNode {
+    void this.context;
+    return this.output!;
   }
 
   get micOpen(): boolean { return this.stream !== null; }

@@ -4,6 +4,18 @@ Yanni is a friendly face for a wall tablet. The tablet's browser runs the face, 
 add-on serves the app, pairs tablets, relays a short list of Home Assistant calls for them, and shows every tablet
 in Home Assistant as a device called "Yanni ‹Room›".
 
+Everything the tablet needs ships inside the add-on: the face, the turn-detection models (Silero VAD, Smart Turn),
+the MediaPipe face, hand and pose models and both wasm runtimes. Nothing loads from the internet, at install or at
+run time, so Yanni keeps working with no internet connection (speech still needs your Assist pipeline).
+
+## Installing
+
+1. In Home Assistant open **Settings → Add-ons → Add-on store**, then **⋮ → Repositories**, and add
+   `https://github.com/qrobinso/yanni-addon`.
+2. Install **Yanni** and start it. Home Assistant builds the image on the device; it is about 120 MB, mostly
+   models.
+3. Turn on **Show in sidebar** to reach the owner pages.
+
 ## Before you start
 
 - **MQTT.** Install the Mosquitto broker add-on and the MQTT integration. Yanni finds the broker by itself.
@@ -26,12 +38,29 @@ The display port is 8443. Change the host port under the add-on's **Network** se
 ## Pairing a tablet
 
 1. Open **Yanni** in the sidebar and make a pairing code for the room.
-2. On the tablet, open `https://<your Home Assistant host>:8443/` (a kiosk browser such as Fully Kiosk, or Safari
-   with Guided Access) and enter the code. Codes work once and expire after 10 minutes.
+2. On the tablet, open the display URL, `https://<your Home Assistant host>:8443/` (the host name must match the
+   certificate), and enter the code. Codes work once and expire after 10 minutes.
 3. The tablet keeps its device token. Revoke it on the same page; that also removes it from Home Assistant.
+
+Before it is paired (or while no Assist pipeline answers) the tablet behaves as the iPad app does without voice
+services: the conversation loop stays dormant ("voice services not set up"), the microphone never opens, and the
+look-to-talk dry run gives the engaged look while someone holds eye contact. Hold to talk answers with a small
+sheepish "can't".
 
 Moving from the iPad app: enter its install ID (iPad Settings → Status) when making the code, and the tablet keeps
 the iPad's MQTT node, topics and entity IDs.
+
+## Kiosk tips
+
+- **Browser.** The face draws with WebGPU: Safari on iPadOS 26 or later, or a recent Chrome. Use a kiosk browser
+  such as Fully Kiosk, or Safari with Guided Access, and allow the camera and microphone for the display URL.
+- **Screen.** The page keeps the screen awake while it is visible; still turn off auto-lock or set it long, and
+  leave the tablet plugged in.
+- **Sound.** If the browser blocks autoplay, a hint asks for one tap; after that the voice plays.
+- **Owner menu.** Hold the bottom-right corner for 2.5 seconds for Settings, Status and Tuning. Settings and Tuning
+  can be locked with a 4-digit PIN.
+- **Talking.** Look at Yanni to talk, or hold the face to talk. Say "that's all" or "go away" to close the mic.
+- **Reduce Motion.** The tablet's Reduce Motion setting calms the face.
 
 ## What the tablet may ask Home Assistant
 
@@ -68,8 +97,11 @@ A tablet is unavailable while it is not connected, and every tablet is unavailab
 
 The add-on folder is the Docker build context and holds no sources. `scripts/stage-addon.sh` builds the web app,
 bundles the server into one ESM file with its dependencies (`npm run bundle -w server`, esbuild) and copies both into
-`addon/rootfs/app`. Run it before a release and commit what it stages. Everything staged is plain JavaScript, so one
-`node:24-alpine` Dockerfile serves aarch64 and amd64.
+`addon/rootfs/app`. It runs `web/scripts/fetch-models.mjs` first (SHA-256 pinned; downloads only what is missing)
+and fails if a model or wasm runtime did not make it into the stage. Run it before a release and commit what it
+stages: Home Assistant builds the image on the device from this repository, so the models must be in it. Everything
+staged is plain JavaScript, so one `node:24-alpine` Dockerfile serves aarch64 and amd64.
+`SMOKE_STAGED=1 npm run smoke -w web` runs the kiosk smoke against the staged app.
 
 Run the server against a real Home Assistant from the repo:
 

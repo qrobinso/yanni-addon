@@ -13,8 +13,7 @@ import { DeviceDefaults } from './DeviceDefaults';
 import { treatAsOLED, type DeviceProfile } from './DeviceProfile';
 import type { Budget } from './ResourceGovernor';
 
-/// The renderer's drawable-scale lever (Swift FaceRenderControl.renderScale). port-note: FaceRenderer has no render
-/// scale yet, so the kiosk passes one only when the shell provides it.
+/// The renderer's drawable-scale lever (Swift FaceRenderControl.renderScale); `FaceRenderer` is one.
 export interface RenderScaleControl { renderScale: number }
 
 interface RateModifier { rate: number }

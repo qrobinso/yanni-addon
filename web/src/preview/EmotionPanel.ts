@@ -28,7 +28,11 @@ export const PRESETS: readonly (readonly [string, V3, number, ImpulseSource, str
 
 const p3 = (v: V3): string => `P ${v.x >= 0 ? '+' : ''}${v.x.toFixed(2)}  A ${v.y >= 0 ? '+' : ''}${v.y.toFixed(2)}  D ${v.z >= 0 ? '+' : ''}${v.z.toFixed(2)}`;
 
-/** The section's runtime state: the simulator and its log, the custom impulse, the nudge. */
+const previews = new WeakMap<EmotionLayer, EmotionPreview>();
+
+/** The section's runtime state: the simulator and its log, the custom impulse, the nudge. Like the Swift app's
+ *  EmotionModel it lives as long as the layer (`EmotionPreview.for`), so a scenario keeps running, ticked by the frame
+ *  clock's after-frame hook, in the kiosk as in tuning.html, after the Tuning page closes. */
 export class EmotionPreview {
   readonly simulator: ConversationSimulator;
   readonly simLog: string[] = [];
@@ -37,36 +41,41 @@ export class EmotionPreview {
   nudgeFeeling = 'Curious';
   nudgeStrength = 0.5;
   nudgeLook: NudgeLook | null = null;
-  private ticker: ReturnType<typeof setInterval> | null = null;
+  private lastHost: number | null = null;
 
-  constructor(readonly m: TuningModel, readonly layer: EmotionLayer) {
+  /** The layer's one preview (made on first use, its frame hook added once); `m` is the Tuning page now open. */
+  static for(m: TuningModel, layer: EmotionLayer): EmotionPreview {
+    let ep = previews.get(layer);
+    if (!ep) { ep = new EmotionPreview(m, layer); previews.set(layer, ep); } else ep.m = m;
+    return ep;
+  }
+
+  constructor(public m: TuningModel, readonly layer: EmotionLayer) {
     this.simulator = new ConversationSimulator(layer);
     this.simulator.onLog = (line) => {
       this.simLog.unshift(`${layer.realTime.toFixed(1).padStart(5)}  ${line}`);
       this.simLog.length = Math.min(this.simLog.length, 14);
     };
+    m.ctx.clock.addAfterFrame((t) => this.tick(t));
   }
 
-  /** Runs a scenario; it is ticked at 30 Hz off the frame loop while it runs (no work when idle). Without a
-   *  conversation controller the layer's gate hand-offs set the state, as the app's stand-in does. */
+  /** Per frame (EmotionModel.tick): runs the scripted conversation's due steps. No work when idle. */
+  tick(hostTime: number): void {
+    this.lastHost = hostTime;
+    if (this.simulator.running !== null) this.simulator.tick(hostTime);
+  }
+
+  /** Runs a scenario. Without a conversation controller the layer's gate hand-offs set the state, as the app's
+   *  stand-in does (in the kiosk the controller's sink hands them to the face while no conversation runs). */
   simulate(s: SimScenario): void {
     this.simLog.length = 0;
-    this.simulator.start(s, HostClock.nowSeconds());
+    this.simulator.start(s, this.lastHost ?? HostClock.nowSeconds());
     if (!this.m.ctx.conversation) {
-      this.layer.onGate = (g) => this.m.setAgentState(g.kind === 'notForMe' ? 'notForMe' : 'confused');
+      this.layer.onGate = (g) => this.layer.engine.setAgentState(g.kind === 'notForMe' ? 'notForMe' : 'confused');
     }
-    if (this.ticker) clearInterval(this.ticker);
-    this.ticker = setInterval(() => {
-      this.simulator.tick(HostClock.nowSeconds());
-      if (this.simulator.running === null) this.stop();
-    }, 1000 / 30);
   }
 
-  stop(): void {
-    this.simulator.stop();
-    if (this.ticker) clearInterval(this.ticker);
-    this.ticker = null;
-  }
+  stop(): void { this.simulator.stop(); }
 
   tune(f: (s: EmotionSettings) => void): void {
     const s = this.layer.settings.copy();

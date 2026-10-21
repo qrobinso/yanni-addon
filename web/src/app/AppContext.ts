@@ -19,6 +19,7 @@ import type { TurnDetector } from '../conversation/core/TurnDetection';
 import type { LocalAgentTransport } from '../conversation/agent/LocalAgentTransport';
 import type { ConversationAudioEngine } from './conversation/ConversationAudioEngine';
 import type { PerceptionHarness } from './PerceptionHarness';
+import type { HAChannel } from '../conversation/agent/homeassistant/HAChannel';
 
 export interface AppContext {
   engine: FaceEngine;
@@ -46,6 +47,8 @@ export interface AppContext {
   audioEngine?: ConversationAudioEngine;
   /** The orchestrator's transport (voice services health); null when it couldn't be built. */
   transport?: LocalAgentTransport | null;
+  /** The Home Assistant channel (the relay, or `?fakeha`'s fake): Settings' Voice services pickers list through it. */
+  haChannel?: HAChannel;
   turnDetector?: TurnDetector | null;
   announcements?: AnnouncementQueue | null;
   captions?: CaptionOverlay | null;

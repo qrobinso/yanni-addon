@@ -199,6 +199,11 @@ export class FakeHomeAssistant implements HAChannel, HAMediaFetching {
         return reply(result({ agents: [{ id: 'conversation.jev', name: 'Jev', supported_languages: '*' },
           { id: 'conversation.openai', name: 'OpenAI', supported_languages: ['en'] }] }));
       case 'assist_pipeline/pipeline/list': return reply(result(cfg.pipelines));
+      // Already trimmed, as the relay hands it on (server/src/relay.ts filterStates).
+      case 'get_states': return reply(result([
+        { entity_id: 'ai_task.openai', state: 'unknown', attributes: { friendly_name: 'OpenAI AI Task' } },
+        { entity_id: 'conversation.jev', state: 'unknown', attributes: { friendly_name: 'Jev' } },
+        { entity_id: 'tts.piper', state: 'unknown', attributes: { friendly_name: 'Piper' } }]));
       default: return reply(haError('unknown_command', 'Unknown command.'));
     }
   }

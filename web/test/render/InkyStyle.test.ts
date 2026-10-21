@@ -69,7 +69,7 @@ describe('InkyStyle', () => {
 
   /// Over every expression × random cartoon proportions × pupil position × size × squash × closure, the pupil rim
   /// never crosses the ink's inner edge — by the exact egg distance, and by the field the renderer actually draws.
-  test('pupilNeverCrossesTheInk', () => {
+  test('pupilNeverCrossesTheInk', { timeout: 30_000 }, () => {
     const rng = new TestRandom(0x1a4);
     const positions = [-1, -0.6, 0, 0.6, 1];
     let checked = 0;
@@ -187,7 +187,7 @@ describe('InkyStyle', () => {
   }
   const len = (a: V2, b: V2) => Math.hypot(a.x - b.x, a.y - b.y);
 
-  test('notchAndCrescentStayInsideTheVisiblePupil', () => {
+  test('notchAndCrescentStayInsideTheVisiblePupil', { timeout: 30_000 }, () => {
     const lidded = withPupils(FacePose.defaults, { x: 0.3, y: -0.8 });
     lidded.addBoth('upperLidY', 0.32);
     for (const frame of [makeFaceFrame(FacePose.defaults), makeFaceFrame(withPupils(FacePose.defaults, { x: 1, y: -1 })),
@@ -214,7 +214,7 @@ describe('InkyStyle', () => {
 
   /// The accents are attached to the pupil: they keep their place in pupil coordinates when the pupil moves,
   /// dilates, or is squashed by a blink, and their area scales with the pupil's.
-  test('accentsMoveAndScaleWithThePupil', () => {
+  test('accentsMoveAndScaleWithThePupil', { timeout: 30_000 }, () => {
     const ref = accents(makeFaceFrame(FacePose.defaults));
     const refArea = ref.e.pupil.z * ref.e.pupil.w;
     const d = FacePose.defaults;

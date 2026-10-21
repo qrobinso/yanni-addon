@@ -21,3 +21,4 @@ server/test/out/
 
 # Playwright MCP session output
 .playwright-mcp/
+addon/rootfs/app/

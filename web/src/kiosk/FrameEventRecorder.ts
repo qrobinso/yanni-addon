@@ -74,6 +74,9 @@ export class FrameEventRecorder {
     }
   }
 
+  /// The Status subsystem an event belongs to (DevStatusModel.drainFrameEvents: chirps are Voice, the rest Face).
+  static category(k: FrameEventKind): 'Face' | 'Voice' { return k.kind === 'chirp' ? 'Voice' : 'Face'; }
+
   /// The event log line for an event (the wording the Status page always used).
   static describe(k: FrameEventKind): string {
     switch (k.kind) {

@@ -7,12 +7,14 @@
 import { SETTING_GROUPS, SETTING_KEYS, isJsonObject, isValidSetting, settingDef, type SettingDef, type SettingGroup,
   type SettingKey, type Settings } from '@yanni/server/settings';
 import type { AppContext } from '../app/AppContext';
+import { displayClientChannel } from '../conversation/agent/homeassistant/HAChannel';
 import { OwnerAccess } from '../app/OwnerAccess';
 import { PersonalityPreset } from '../emotion/EmotionSettings';
 import { RenderStyle } from '../render/RenderStyle';
 import { emotionSettings, perceptionSettings, turnTunables } from './SettingsAppliers';
 import type { SettingsHub } from './SettingsHub';
 import { developerStyle, linearToHex, StyleComposer } from './StyleComposer';
+import { loadVoiceServicesLists, voiceServicesRows, type VoiceServicesLists } from './VoiceServicesLists';
 import './settings.css';
 
 export interface PanelOptions {
@@ -112,6 +114,9 @@ function expandedJson(k: SettingKey, s: Settings): Record<string, unknown> {
     default: return s[k] as unknown as Record<string, unknown>;
   }
 }
+
+/** Picked from Home Assistant's lists (VoiceServicesSection), not typed. */
+const PICKED: readonly SettingKey[] = ['pipeline_id', 'conversation_agent_id', 'jev_config_entry_id', 'ai_task_entity_id'];
 
 interface Control { key: SettingKey; row: HTMLElement; sync(s: Settings): void }
 
@@ -246,6 +251,7 @@ export function openSettingsPanel(ctx: AppContext, hub: SettingsHub, access: Own
   layer.append(sheet);
   const controls: Control[] = [];
   const timers: ReturnType<typeof setInterval>[] = [];
+  const offs: (() => void)[] = [];
   let closed = false;
   let idle: ReturnType<typeof setTimeout> | undefined;
   const conversation = ctx.conversation;
@@ -256,6 +262,7 @@ export function openSettingsPanel(ctx: AppContext, hub: SettingsHub, access: Own
     closed = true;
     clearTimeout(idle);
     for (const t of timers) clearInterval(t);
+    for (const f of offs) f();
     off();
     if (conversation) conversation.isSuppressed = wasSuppressed;
     ctx.settingsOpen = false;
@@ -346,7 +353,7 @@ export function openSettingsPanel(ctx: AppContext, hub: SettingsHub, access: Own
     const make = (k: SettingKey) => { const c = control(hub, k); controls.push(c); return c.row; };
     const keysOf = (g: SettingGroup) => SETTING_KEYS.filter((k) => settingDef(k).group === g);
     const section = (g: (typeof SETTING_GROUPS)[number], before: Kid[] = [], after: Kid[] = []) => {
-      const keys = keysOf(g.id);
+      const keys = keysOf(g.id).filter((k) => !PICKED.includes(k));
       const order = ROW_ORDER[g.id];
       if (order) keys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
       const main = keys.filter((k) => !settingDef(k).advanced);
@@ -365,7 +372,7 @@ export function openSettingsPanel(ctx: AppContext, hub: SettingsHub, access: Own
         el('button', { type: 'button', onclick: () => ctx.life.forceSleep() }, 'Put to sleep'),
         el('button', { type: 'button', onclick: () => ctx.life.forceWake() }, 'Wake up'))], []],
 
-      conversation: [[statusRow('Home Assistant', () => ctx.client ? (ctx.client.haConnected ? 'Connected through the add-on' : 'Not connected (the add-on manages the connection)') : 'Not paired')],
+      conversation: [[statusRow('Home Assistant', () => ctx.client ? (ctx.client.haConnected ? 'Connected through the add-on' : 'Not connected (the add-on manages the connection)') : 'Not paired'), voiceServicesPickers()],
         [personaSnippet()]],
       home: [[statusRow('Add-on', () => ctx.client ? `${ctx.client.status}${ctx.client.room ? ` · “Yanni ${ctx.client.room}”` : ''}` : 'Not paired')], []],
       access: [[accessRows()], []],
@@ -429,6 +436,50 @@ export function openSettingsPanel(ctx: AppContext, hub: SettingsHub, access: Own
         ...(OwnerAccess.available ? [] : [el('p', { className: 'ys-help' }, 'An owner PIN needs HTTPS.')]));
     };
     render();
+    return box;
+  }
+
+  /** VoiceServicesSection's pipeline, agent, decision model and announcements pickers, listed through the relay when
+   *  the panel opens and again whenever Home Assistant reconnects (the add-on's Connect). */
+  function voiceServicesPickers(): HTMLElement {
+    const box = el('div', { className: 'ys-vs' });
+    const channel = ctx.haChannel ?? (ctx.client ? displayClientChannel(ctx.client) : null);
+    let lists: VoiceServicesLists | null = null;
+    let loading = false;
+    let shown = '';
+    const render = (s: Settings) => {
+      const rows = !channel?.isOpen ? 'off' : !lists ? 'loading' : voiceServicesRows(lists, s);
+      const signature = JSON.stringify(rows);
+      if (signature !== shown) {
+        shown = signature;
+        const focused = box.contains(document.activeElement) ? document.activeElement?.id : undefined;
+        box.replaceChildren(...(rows === 'off'
+          ? [el('p', { className: 'ys-help' }, 'Once the add-on connects to Home Assistant, pick the pipeline, agent and announcements here.')]
+          : rows === 'loading' ? [el('p', { className: 'ys-help', role: 'status' }, 'Loading Home Assistant’s pipelines and agents…')]
+          : rows.map((r) => {
+            if (r.kind === 'note') return el('p', { className: `ys-help${r.warn ? ' ys-warn' : ''}` }, r.text);
+            if (r.kind === 'fixed') return el('div', { className: 'ys-row' }, el('span', {}, r.label), el('span', { className: 'ys-value' }, r.value));
+            const id = `ys-${r.key}`;
+            const sel = el('select', { id, onchange: () => hub.update('app', { [r.key]: sel.value } as Partial<Settings>) },
+              ...r.options.map((o) => el('option', { value: o.value }, o.label)));
+            return el('div', { className: 'ys-row' }, el('label', { htmlFor: id }, r.label), el('span', { className: 'ys-input' }, sel));
+          })));
+        if (focused) box.querySelector<HTMLElement>(`#${focused}`)?.focus();
+      }
+      for (const k of PICKED) {
+        const sel = box.querySelector<HTMLSelectElement>(`#ys-${k}`);
+        if (sel && document.activeElement !== sel) sel.value = String(s[k]);
+      }
+    };
+    const load = () => {
+      if (!channel?.isOpen || loading) return;
+      loading = true;
+      loadVoiceServicesLists(channel).then((l) => { lists = l; }, () => { lists = null; })
+        .finally(() => { loading = false; if (!closed) render(hub.settings); });
+    };
+    if (channel) offs.push(channel.onOpenChange((open) => { if (open) load(); else lists = null; render(hub.settings); }));
+    controls.push({ key: 'pipeline_id', row: box, sync: render });
+    load();
     return box;
   }
 

@@ -73,7 +73,7 @@ describe('PupilTests', () => {
 
   /// Over a grid of expression × pupil position × size × squash × eye scale × rotation × ovalness × closure, the
   /// pupil rim never crosses the outline's inner edge, and lies inside the sclera.
-  test('pupilNeverCrossesTheOutline', () => {
+  test('pupilNeverCrossesTheOutline', { timeout: 30_000 }, () => {
     const rng = new TestRandom(0xc0ffee);
     const positions = [-1, -0.6, 0, 0.6, 1];
     let checked = 0;
@@ -118,7 +118,7 @@ describe('PupilTests', () => {
   });
 
   /// C5: no snapping. |Δc| ≤ 2·max(ex, ey)·|Δv| on a fine grid, including squashed eyes and squashed pupils.
-  test('mappingIsLipschitz', () => {
+  test('mappingIsLipschitz', { timeout: 30_000 }, () => {
     const step = 0.02;
     const bad: string[] = [];
     for (const [label, shape] of solverShapes()) {

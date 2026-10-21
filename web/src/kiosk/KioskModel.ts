@@ -9,7 +9,7 @@ import type { AppContext } from '../app/AppContext';
 import type { DisplayState } from '@yanni/server/protocol';
 import type { LifePhaseChange } from '../life/LifeTypes';
 import { BacklightFollower, type Dimmable } from './Backlight';
-import { DeviceProfile } from './DeviceProfile';
+import { DeviceProfile, type DeviceOverrides } from './DeviceProfile';
 import { DiagnosticsExport, type DiagnosticsManifest } from './DiagnosticsExport';
 import { FaceAccessibility } from './FaceSpokenState';
 import { FrameEventRecorder } from './FrameEventRecorder';
@@ -58,6 +58,10 @@ export interface KioskOptions {
   reload?: () => void;
   wall?: () => Date;
 }
+
+/// The owner's kiosk settings after launch; `displayOverride` is `display_kind` (null = auto, the device table).
+export type KioskConfig = Pick<KioskOptions, 'restartOnHang' | 'maintenanceRestart' | 'oledBackgroundBudget'>
+  & { displayOverride?: DeviceOverrides['display'] | null };
 
 export class KioskModel {
   readonly boot: KioskBoot;
@@ -122,13 +126,21 @@ export class KioskModel {
   }
 
   /// The owner's kiosk settings changed (Swift: the hub observer re-arms the hang restart).
-  configure(o: Pick<KioskOptions, 'restartOnHang' | 'maintenanceRestart' | 'oledBackgroundBudget'>): void {
+  /// Returns whether the device profile changed (the display override): the shell re-applies the style then.
+  configure(o: KioskConfig): boolean {
     const armed = this.hangArmed;
-    this.opts = { ...this.opts, ...o };
+    const { displayOverride, ...rest } = o;
+    this.opts = { ...this.opts, ...rest };
+    const remade = displayOverride !== undefined && this.boot.setDisplayOverride(displayOverride);
+    if (remade) {
+      this.boot.diagnostics.add('app', `display override: ${DeviceProfile.summary(this.boot.profile)}`);
+      this.applyBudget();
+    }
     if (this.hangArmed !== armed) {
       this.heartbeat.arm(this.hangArmed);
       this.boot.diagnostics.add('health', `kiosk settings: self-restart on hang ${this.hangArmed}`);
     }
+    return remade;
   }
 
   get uptime(): number { return this.ctx.now() - this.boot.launchUptime; }
@@ -215,6 +227,8 @@ export class KioskModel {
     });
     const before = this.governor.level;
     const level = this.governor.update(i, now);
+    // Perception's pressure cap (Swift applyBudget), every tick so a restarted pipeline picks it up.
+    this.ctx.perception?.setGovernorPressure?.(this.governor.budget.perceptionPressure);
     if (level !== null) {
       this.applyBudget();
       this.boot.diagnostics.add('resource', `level ${before} → ${level} (${this.governor.reason})`);
@@ -247,7 +261,7 @@ export class KioskModel {
     return Math.max(0, 1 - dd / dr);
   }
 
-  /// Pushes the governor's budget to the face (perception's pressure cap has no web hook yet: MAPPING.md).
+  /// Pushes the governor's budget to the face (perception's pressure cap is pushed by `tick`).
   applyBudget(): void {
     KioskApply.apply(this.boot.defaults, this.boot.profile, this.governor.budget, this.ctx.clock,
       this.opts.renderControl ?? null, this.ctx.engine);
@@ -278,7 +292,7 @@ export class KioskModel {
   }
 
   private drainEvents(): void {
-    this.recorder.drain((e) => this.ctx.logEvent('face', FrameEventRecorder.describe(e.kind)));
+    this.recorder.drain((e) => this.ctx.logEvent(FrameEventRecorder.category(e.kind), FrameEventRecorder.describe(e.kind)));
   }
 
   private pollAccessibility(): void {

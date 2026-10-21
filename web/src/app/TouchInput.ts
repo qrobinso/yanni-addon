@@ -118,19 +118,11 @@ export class TouchInput {
   attach(el: HTMLElement): () => void {
     const now = () => performance.now() / 1000;
     let ticker: ReturnType<typeof setInterval> | undefined;
-    // shortcut: the four-finger press ignores finger movement (UIKit allows 40 pt); fine for a deliberate press.
-    const fingers = new Set<number>();
-    let fourFinger: ReturnType<typeof setTimeout>[] = [];
-    const endFourFinger = () => { for (const h of fourFinger) clearTimeout(h); fourFinger = []; };
+    const press = new FourFingerPress(() => this.cb.onMenu(), () => this.cb.onReset?.());
     const stopTicker = () => { if (ticker !== undefined && !this.isTracking) { clearInterval(ticker); ticker = undefined; } };
     const down = (e: PointerEvent) => {
-      fingers.add(e.pointerId);
-      if (fingers.size === 4) {
-        endFourFinger();
-        fourFinger = [setTimeout(() => this.cb.onMenu(), TouchInput.fourFingerDuration * 1000),
-          setTimeout(() => this.cb.onReset?.(), TouchInput.resetHold * 1000)];
-      } else if (fingers.size > 4) endFourFinger();
       const r = el.getBoundingClientRect();
+      press.down(e.pointerId, e.clientX - r.left, e.clientY - r.top);
       this.down(e.pointerId, e.clientX - r.left, e.clientY - r.top, now(), r.width, r.height);
       if (this.pointer === e.pointerId) {
         try { el.setPointerCapture(e.pointerId); } catch { /* synthetic events */ }
@@ -139,8 +131,8 @@ export class TouchInput {
       stopTicker();
     };
     const pos = (e: PointerEvent) => { const r = el.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top] as const; };
-    const move = (e: PointerEvent) => { const [x, y] = pos(e); this.move(e.pointerId, x, y, now()); };
-    const lift = (id: number) => { if (fingers.delete(id) && fingers.size < 4) endFourFinger(); };
+    const move = (e: PointerEvent) => { const [x, y] = pos(e); press.move(e.pointerId, x, y); this.move(e.pointerId, x, y, now()); };
+    const lift = (id: number) => press.lift(id);
     const up = (e: PointerEvent) => { lift(e.pointerId); const [x, y] = pos(e); this.up(e.pointerId, x, y, now()); stopTicker(); };
     const cancel = (e: PointerEvent) => { lift(e.pointerId); this.cancel(e.pointerId); stopTicker(); };
     el.addEventListener('pointerdown', down);
@@ -153,7 +145,43 @@ export class TouchInput {
       el.removeEventListener('pointerup', up);
       el.removeEventListener('pointercancel', cancel);
       if (ticker !== undefined) clearInterval(ticker);
-      endFourFinger();
+      press.end();
     };
+  }
+}
+
+/** The four-finger press (FaceScreen's UILongPressGestureRecognizer: 4 touches, `fourFingerDuration`,
+ *  `allowableMovement` 40 pt): the menu once four fingers have stayed within 40 CSS px of where they came down for
+ *  1.2 s, then Reset if the press is kept going to `resetHold` (movement no longer matters once it has begun, as in
+ *  UIKit). A finger lifting below four, or a fifth finger, ends it. */
+export class FourFingerPress {
+  static readonly allowableMovement = 40;
+  private readonly fingers = new Map<number, { x: number; y: number }>();
+  private timers: ReturnType<typeof setTimeout>[] = [];
+  private began = false;
+
+  constructor(private readonly onMenu: () => void, private readonly onReset: () => void) {}
+
+  down(id: number, x: number, y: number): void {
+    this.fingers.set(id, { x, y });
+    if (this.fingers.size === 4) {
+      this.end();
+      this.timers = [setTimeout(() => { this.began = true; this.onMenu(); }, TouchInput.fourFingerDuration * 1000),
+        setTimeout(() => this.onReset(), TouchInput.resetHold * 1000)];
+    } else if (this.fingers.size > 4) this.end();
+  }
+
+  move(id: number, x: number, y: number): void {
+    const s = this.fingers.get(id);
+    if (!s || this.began || this.timers.length === 0) return;
+    if (Math.hypot(x - s.x, y - s.y) > FourFingerPress.allowableMovement) this.end();
+  }
+
+  lift(id: number): void { if (this.fingers.delete(id) && this.fingers.size < 4) this.end(); }
+
+  end(): void {
+    for (const h of this.timers) clearTimeout(h);
+    this.timers = [];
+    this.began = false;
   }
 }

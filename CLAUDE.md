@@ -18,7 +18,8 @@ The product spec, which describes every behaviour, is `../yanni/docs/spec.md`. R
 ```
 repository.yaml        HA add-on repository manifest
 addon/                 the add-on: config.yaml, Dockerfile, rootfs/run.sh, DOCS.md, CHANGELOG.md
-scripts/stage-addon.sh builds web + server and copies them into addon/rootfs/app (run before a release)
+scripts/stage-addon.sh fetches the models, builds web + server and stages them into addon/rootfs/app (run before a
+                       release; the stage is committed: HA builds the image on the device and the display is offline)
 server/                Node 24 add-on server (npm workspace @yanni/server)
   src/protocol.ts        display ⇄ add-on WebSocket protocol (imported by web as @yanni/server/protocol)
   src/settingsSchema.ts  every setting: type, default, range, HA exposure (@yanni/server/settings)
@@ -38,8 +39,15 @@ web/                   the browser app (npm workspace @yanni/web)
   src/perception/        tracker, engagement, eye contact, gestures, reflexes, coordinator; web/ = MediaPipe front end in a worker
   src/conversation/      turn detection (turn/, turnml/ Silero VAD + Smart Turn on onnxruntime-web), audio/, core/ controller,
                          agent/ (HA Assist pipeline, jev.ask gate, reply voicing), captions/, announcements/, home/
-  src/app/               kiosk shell: main.ts frame loop, pairing, DisplayClient, touch, owner menu, HUD, settings application
-  *.html                 index (kiosk) + demo pages: render-demo, voice-demo, turn-demo, perception-demo
+  src/settings/          SettingsHub (the single writer: owner screen, HA, Tuning), store, appliers into every subsystem,
+                         StyleComposer, the kiosk Settings screen (voice-services pickers filled through the relay)
+  src/kiosk/             kiosk services: resource governor (render scale, rate ceiling), health supervisor, hang monitor,
+                         launch guard, device profile (+ display_kind override), diagnostics, vitals, the frame event recorder
+                         (MAPPING.md: every iOS → browser mapping)
+  src/preview/           owner tools: Tuning (every Swift preview panel, the emotion conversation simulator) and Status
+                         (cards, the event log), also standalone in tuning.html
+  src/app/               kiosk shell: main.ts frame loop, pairing, DisplayClient, touch, owner menu, HUD, ?fakeha relay
+  *.html                 index (kiosk), tuning, + demo pages: render-demo, voice-demo, turn-demo, perception-demo
   scripts/               fetch-models.mjs (ONNX + MediaPipe models into public/, sha256-pinned), kiosk/perception smoke tests
 fixtures/golden/       reference traces (gzipped JSON) for engine, life, emotion and voice; FORMAT.md documents them
 fixtures/render/       reference PNGs + frames.json for render parity
@@ -55,7 +63,9 @@ node web/scripts/fetch-models.mjs   # once: models + wasm into web/public (gitig
 npm test                            # all workspaces (Vitest)
 npm run build                       # web (tsc + vite) and server (tsc + owner bundle)
 npm run dev                         # Vite dev server for web; demo pages at /render-demo.html etc.
-npm run smoke -w web                # headless Chrome: pairing, socket, face renders, frame timings
+npm run smoke -w web                # headless Chrome: pairing, socket, face renders, frame timings, then the ?fakeha
+                                    # voice loop (SMOKE_FAKEHA=0 skips it; SMOKE_STAGED=1 runs the staged add-on)
+scripts/stage-addon.sh              # release stage into addon/rootfs/app (fails if a model or wasm is missing)
 npm run render:parity -w web        # headless Chrome WebGPU vs fixtures/render PNGs
 cd web && npx tsc --noEmit          # typecheck web
 ```
@@ -66,7 +76,11 @@ To run locally end to end:
    Or add `PAIR_TEST_CODE=1111` to step 2 and use `1111` (reusable, pairs into room "Test"; dev only, never in the add-on).
 4. Open http://localhost:8443 and enter the code.
 
-To use a real HA in dev, add `HA_URL=… HA_TOKEN=…` (and `MQTT_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD`) to step 2. Append `?fakeha` to the display URL for a conversation loop that needs no HA. Append `?debug` for timings.
+To use a real HA in dev, add `HA_URL=… HA_TOKEN=…` (and `MQTT_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD`) to step 2. Append `?fakeha` to the display URL for the whole conversation loop over an in-process fake Home Assistant (look or hold to talk, captions, the voice-services pickers). Append `?debug` for timings and the `yanni` debug handle.
+
+Owner tools on the kiosk: hold the bottom-right corner 2.5 s (or a four-finger press 1.2 s; kept to 10 s it opens
+Reset) for the owner menu: Settings, Status (health, the event log, diagnostics export, burn-in check) and Tuning
+(with Developer tools on). `npm run dev` then `/tuning.html` opens Tuning and Status without pairing.
 
 ## Architecture in one breath
 Each frame, `main.ts` does the following:

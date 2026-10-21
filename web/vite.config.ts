@@ -1,10 +1,14 @@
 import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import { defaultClientConditions, defineConfig } from 'vite';
 
 // Cross-origin isolation in dev too (the add-on server sends the same headers): onnxruntime-web gets its threads.
 const isolation = { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' };
 
 export default defineConfig({
+  // onnxruntime-web's default entry (ort.bundle.min.mjs) embeds its loader and points `new URL(…wasm, import.meta.url)`
+  // at the 28 MB wasm, which Vite then emits into assets/ a second time. This condition picks the plain entry, which
+  // loads loader and wasm from ort.env.wasm.wasmPaths (the self-hosted /ort/, ModelCatalog.configureRuntime).
+  resolve: { conditions: ['onnxruntime-web-use-extern-wasm', ...defaultClientConditions] },
   build: {
     target: 'es2023',
     outDir: 'dist',

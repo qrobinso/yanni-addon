@@ -15,6 +15,7 @@ import { HostClock } from '../voice/host/VoiceOutput';
 import { availabilityLabel } from '../conversation/turn/TurnDetectionStatus';
 import type { EventSource } from './EventLog';
 import { shapeName } from './TuningModel';
+import { perceptionKeepsCard as keepsCard } from './perception/PerceptionKeepsCard';
 
 export type StatusLevel = 'running' | 'degraded' | 'notBuilt' | 'error';
 export const StatusLevel = {
@@ -457,22 +458,4 @@ function healthRows(ctx: AppContext): StatusRow[] {
 }
 
 /** "What perception keeps" (perception upgrade design §13, §5.3): numbers only, never pictures, video or sound. */
-export function perceptionKeepsCard(ctx: AppContext): StatusCard | null {
-  const harness = ctx.harness;
-  if (!harness) return null;
-  const c = harness.counters.lifetime;
-  const sum = (m: Record<string, number>): number => Object.values(m).reduce((a, b) => a + b, 0);
-  return {
-    id: 'keeps', title: 'What perception keeps', level: 'running', detail: 'nothing recording', rows: [
-      { label: 'models', value: 'rules only (no trained models yet)' },
-      { label: 'eye contact', value: 'geometric (not taught)' },
-      { label: 'recording', value: 'off' },
-      { label: 'engagements', value: `${c.engagements} · false ${c.perHour(c.falseEngagements).toFixed(2)} / h · hand-overs ${c.engagedHandOvers} · re-entries ${c.reentries}` },
-      { label: 'gestures', value: `${sum(c.gestureEvents)} events · ${c.reactions} reactions (${c.perHour(c.reactions).toFixed(2)} / h)` },
-      { label: 'false positives', value: `${c.gestureFalsePositives} (${c.perHour(c.gestureFalsePositives).toFixed(2)} / h) · button ${c.wrongReactionReports} · none sessions ${c.noneSessionReactions}` },
-      ...(c.heapSamples > 0 ? [{ label: 'alloc proxy', value: `${c.heapBlocksPerFrame.toFixed(1)} heap blocks / analysed frame` }] : []),
-      ...(harness.message ? [{ label: 'last report', value: harness.message }] : []),
-    ],
-    note: 'Numbers only — no pictures, video or sound. Nothing about faces or bodies leaves this device.',
-  };
-}
+export const perceptionKeepsCard = (ctx: AppContext): StatusCard | null => keepsCard(ctx.harness);

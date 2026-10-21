@@ -8,7 +8,7 @@ import { runBurnInCheck } from './BurnInCheck';
 import type { DiagnosticsLog } from './DiagnosticsLog';
 import { DiagnosticsExport } from './DiagnosticsExport';
 import type { HealthCardModel } from './HealthCard';
-import { KioskModel, type KioskOptions, type KioskStatusFields } from './KioskModel';
+import { KioskModel, type KioskConfig, type KioskOptions, type KioskStatusFields } from './KioskModel';
 import type { ResourceGovernor } from './ResourceGovernor';
 import type { HealthSupervisor } from './HealthSupervisor';
 import type { VitalsMonitor } from './VitalsMonitor';
@@ -34,8 +34,9 @@ export interface KioskServices {
   /// Whether a subsystem may start on this launch (careful start / safe mode).
   allows(subsystem: string): boolean;
   /// The owner's kiosk settings changed: `restartOnHang` = restart_verified && self_restart_on_hang,
-  /// `maintenanceRestart` = restart_verified && maintenance_restart, `oledBackgroundBudget` = oled_background_budget / 100.
-  configure(o: Pick<KioskOptions, 'restartOnHang' | 'maintenanceRestart' | 'oledBackgroundBudget'>): void;
+  /// `maintenanceRestart` = restart_verified && maintenance_restart, `oledBackgroundBudget` = oled_background_budget / 100,
+  /// `displayOverride` = display_kind (null for auto). Returns true when the device profile changed (re-apply the style).
+  configure(o: KioskConfig): boolean;
   leaveSafeMode(): void;
   crashNow(): void;
   stop(): void;
@@ -70,7 +71,7 @@ export function startKiosk(ctx: AppContext, opts: KioskOptions): KioskServices {
 }
 
 export { KioskBoot } from './KioskBoot';
-export { KioskModel, type KioskOptions, type KioskStatusFields } from './KioskModel';
+export { KioskModel, type KioskConfig, type KioskOptions, type KioskStatusFields } from './KioskModel';
 export { FaceSpokenState, SpokenStateThrottle, FaceAccessibility, LoadDot } from './FaceSpokenState';
 export { HealthCard, type HealthCardModel, type HealthSnap } from './HealthCard';
 export { BurnInCheckModel, runBurnInCheck } from './BurnInCheck';

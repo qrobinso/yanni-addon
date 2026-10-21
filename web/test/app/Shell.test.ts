@@ -1,6 +1,6 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { OwnerAccess, type KeyValue } from '../../src/app/OwnerAccess';
-import { TouchInput, type TouchGestureEvent } from '../../src/app/TouchInput';
+import { FourFingerPress, TouchInput, type TouchGestureEvent } from '../../src/app/TouchInput';
 import { TouchGestureRecognizer } from '../../src/engine/TouchGestures';
 
 const memory = (): KeyValue & { m: Map<string, string> } => {
@@ -83,5 +83,41 @@ describe('TouchInput', () => {
   test('normalises to gaze space around the centre, clamped', () => {
     expect(TouchInput.normalised({ x: 500, y: 400 }, 1000, 800)).toEqual({ x: 0, y: 0 });
     expect(TouchInput.normalised({ x: 0, y: 1200 }, 1000, 800)).toEqual({ x: -1, y: 1 });
+  });
+});
+
+describe('FourFingerPress', () => {
+  const rig = () => {
+    const got: string[] = [];
+    const p = new FourFingerPress(() => got.push('menu'), () => got.push('reset'));
+    for (let i = 0; i < 4; i++) p.down(i, 100 * i, 100);
+    return { p, got };
+  };
+
+  test('menu at 1.2 s, Reset at 10 s; finger movement within 40 px keeps it, and after the menu any movement does', () => {
+    vi.useFakeTimers();
+    try {
+      const { p, got } = rig();
+      p.move(0, 30, 120); // 36 px
+      vi.advanceTimersByTime(1200);
+      expect(got).toEqual(['menu']);
+      p.move(1, 400, 400); // began: movement no longer matters
+      vi.advanceTimersByTime(8800);
+      expect(got).toEqual(['menu', 'reset']);
+    } finally { vi.useRealTimers(); }
+  });
+
+  test('a finger moving more than 40 px before 1.2 s, or one lifting, ends the press', () => {
+    vi.useFakeTimers();
+    try {
+      const a = rig();
+      a.p.move(2, 241, 100);
+      vi.advanceTimersByTime(10_000);
+      expect(a.got).toEqual([]);
+      const b = rig();
+      b.p.lift(3);
+      vi.advanceTimersByTime(10_000);
+      expect(b.got).toEqual([]);
+    } finally { vi.useRealTimers(); }
   });
 });

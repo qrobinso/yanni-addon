@@ -20,6 +20,7 @@
 .ys-msg:empty { display: none; }
 .ys-help, .ys-note { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; color: #8b93a1; }
 .ys-note { margin: 10px 0 0; }
+.ys-help.ys-warn { color: #e0912f; }
 .ys-value { color: #a9b0bc; font-variant-numeric: tabular-nums; min-width: 4.5em; text-align: right; }
 .ys-layer input, .ys-layer select, .ys-layer textarea { font: inherit; color: inherit; background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 8px; min-height: 44px; box-sizing: border-box; min-width: 0; }

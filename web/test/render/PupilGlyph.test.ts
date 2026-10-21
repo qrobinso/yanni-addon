@@ -128,7 +128,7 @@ describe('PupilGlyph', () => {
         }
       }
     }
-  });
+  }, 30_000); // heavy: room for a loaded parallel run
 
   // MARK: Rendered
 

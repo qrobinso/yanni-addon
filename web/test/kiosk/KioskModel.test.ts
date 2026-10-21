@@ -71,6 +71,18 @@ describe('KioskModel', () => {
     expect(m.healthSnap().selfRestartOnHang).toBe(true);
   });
 
+  test('configure applies the owner\'s display kind (display_kind) to the profile', () => {
+    const { m, boot } = rig();
+    const before = boot.profile.display;
+    const other = before === 'lcd' ? 'oled' : 'lcd';
+    expect(m.configure({ displayOverride: other })).toBe(true);
+    expect(boot.profile.display).toBe(other);
+    expect(m.configure({ displayOverride: other })).toBe(false);
+    expect(m.configure({ displayOverride: null })).toBe(true);
+    expect(boot.profile.display).toBe(before);
+    expect(m.configure({ restartOnHang: true })).toBe(false);
+  });
+
   test('the measured refresh rate re-makes the profile', () => {
     const { m, clock } = rig();
     clock.displayMaximumFramesPerSecond = 120;

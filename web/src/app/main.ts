@@ -125,8 +125,10 @@ function logEvent(category: string, message: string): void {
 const hub = new SettingsHub();
 const val = <K extends keyof EntitySettings>(k: K): EntitySettings[K] => hub.settings[k] as EntitySettings[K];
 
-// Launch-time kiosk decisions first: the device profile and the launch guard's verdict (careful start / safe mode).
-const boot = new KioskBoot({ appVersion: APP_VERSION });
+// Launch-time kiosk decisions first: the device profile (with the owner's display kind) and the launch guard's verdict
+// (careful start / safe mode).
+const boot = new KioskBoot({ appVersion: APP_VERSION,
+  overrides: hub.settings.display_kind === 'auto' ? {} : { display: hub.settings.display_kind } });
 
 // ---- One AudioContext: Yanni's voice (AudioWorklet), the spoken replies and the microphone ----
 const audio = new ConversationAudio();
@@ -306,6 +308,7 @@ function startPerceptionNow(): void {
   const p = startPerception(engine, life, { frameStats: clock.stats, settings: perceptionSettings(hub.settings) });
   perception = p;
   ctx.perception = p;
+  harness.attach(p, { frameStats: clock.stats, faceSize: () => faceSize, appBuild: APP_VERSION });
   // The perception tunables reach it now; the voice loop turns look-to-talk's dry run off while it is live.
   settingsAttachment.refresh();
   // Perception reflexes' impulses (gated by the layer: never asleep, at bedtime or sulking).
@@ -385,6 +388,7 @@ unlockAudio(audio.context, document.getElementById('audio-hint')!);
 
 // ---- Owner menu ----
 const access = new OwnerAccess(localStorage);
+harness.access = access;
 const state: Partial<DisplayState> = { started_at: new Date().toISOString() };
 
 /** Home Assistant is up but speech recognition (down, or its model still preparing), the speech voice it needs, or Jev
@@ -530,7 +534,7 @@ const ctx: AppContext = {
   perception: null, client: null, hud, audioEngine, transport, turnDetector, announcements, captions, expressive, harness,
   style: () => renderer.style,
   setStyle: (s) => { renderer.style = s; pushEdgeGeometry(); },
-  logEvent, now: () => performance.now() / 1000, talk, events,
+  logEvent, now: () => performance.now() / 1000, talk, events, haChannel: channel,
   faceSize: () => faceSize,
   openOwner: (d) => (d === 'menu' ? menu.showMenu() : d === 'reset' ? menu.showReset() : menu.open(d)),
   settingsOpen: false,
@@ -540,17 +544,21 @@ const ctx: AppContext = {
 let kiosk: KioskServices | undefined;
 const settingsAttachment = attachSettings(hub, ctx, { expressive: () => expressive, replyClock: () => babbleClock,
   listenCueURL: LISTEN_CUE, styleTransform: (st) => kiosk?.model.style(st) ?? st,
-  onKiosk: (k) => kiosk?.configure({ restartOnHang: k.hangRestartArmed, maintenanceRestart: k.maintenanceRestartArmed,
-    oledBackgroundBudget: k.oledBackgroundBudget }) });
+  onKiosk: (k) => {
+    // A new display kind re-makes the device profile: the style's caps follow.
+    if (kiosk?.configure({ restartOnHang: k.hangRestartArmed, maintenanceRestart: k.maintenanceRestartArmed,
+      oledBackgroundBudget: k.oledBackgroundBudget, displayOverride: k.displayOverride })) queueMicrotask(() => settingsAttachment.refresh());
+  } });
 // The kiosk services: resource governor, health supervisor and watchdogs, hang monitor, diagnostics, vitals, the
 // resume snapshot and the screen-reader description.
-kiosk = startKiosk(ctx, { appVersion: APP_VERSION, boot, settings: () => hub.settings,
+kiosk = startKiosk(ctx, { appVersion: APP_VERSION, boot, renderControl: renderer, settings: () => hub.settings,
   events: () => events.map((e) => `${new Date(e.at).toISOString()} ${e.category}: ${e.message}`),
   restartPerception: () => startPerceptionNow(),
   onResume: (sub) => { if (sub === 'perception') startPerceptionNow(); else if (sub === 'audio') void startVoice(); } });
 settingsAttachment.refresh();
-// The event log's own sources (agent states, one-shots, chirps, life phases, emotion events) for Status.
-startEventCollector(ctx);
+// The event log's other sources (life phases, emotion events, the cheap diffs) for Status; the kiosk's recorder logs
+// agent states, one-shots and chirps (one stream, as the Swift app's).
+startEventCollector(ctx, undefined, { frameEvents: false });
 
 // ---- Live values at 4 Hz, only what changed (the add-on rate-limits face_state to 1/s, keeping the trailing value) ----
 const reported: Record<string, unknown> = {};

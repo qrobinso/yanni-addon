@@ -7,7 +7,7 @@
 // and reply captions and the reply audio playing; the fake camera shows FACE_CLIP (a .y4m with a face, if given) so
 // perception runs too, and the frame timings are measured with every subsystem running.
 // Run: npm run build -w web && npm run build -w server && node web/scripts/kiosk-smoke.mjs
-// Env: SMOKE_SECONDS (perf idle run), FACE_CLIP=/path/face.y4m, SMOKE_FAKEHA=0 skips the voice-loop run.
+// Env: SMOKE_STAGED=1 (serve addon/rootfs/app, after scripts/stage-addon.sh), SMOKE_SECONDS (perf idle run), FACE_CLIP=/path/face.y4m, SMOKE_FAKEHA=0 skips the voice-loop run.
 // Out: web/test/app/out/ (kiosk.png, kiosk-menu.png, seq-NN.png, tap-NNNN.png, fakeha.png)
 import { spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -22,10 +22,13 @@ const out = join(here, '../test/app/out');
 mkdirSync(out, { recursive: true });
 const display = 18443, ingress = 18099;
 
-const server = spawn(process.execPath, [join(repo, 'server/dist/main.js')], {
+// SMOKE_STAGED=1 runs what the add-on image runs: the bundled server and the web app staged into addon/rootfs/app.
+const app = join(repo, 'addon/rootfs/app');
+const staged = process.env.SMOKE_STAGED === '1';
+const server = spawn(process.execPath, [staged ? join(app, 'main.js') : join(repo, 'server/dist/main.js')], {
   env: { ...process.env, DATA_DIR: mkdtempSync(join(tmpdir(), 'yanni-smoke-')), SSL_DIR: '/nonexistent',
     DISPLAY_PORT: String(display), INGRESS_PORT: String(ingress), INGRESS_TRUSTED: '127.0.0.1',
-    WEB_ROOT: join(repo, 'web/dist'), HA_URL: '', HA_TOKEN: '', SUPERVISOR_TOKEN: '', MQTT_URL: '' },
+    WEB_ROOT: staged ? join(app, 'web') : join(repo, 'web/dist'), ...(staged && { OWNER_ROOT: join(app, 'public') }), HA_URL: '', HA_TOKEN: '', SUPERVISOR_TOKEN: '', MQTT_URL: '' },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 let serverLog = '';
