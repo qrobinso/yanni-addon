@@ -3,15 +3,18 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./protocol": "./src/protocol.ts"
+    "./protocol": "./src/protocol.ts",
+    "./settings": "./src/settingsSchema.ts",
+    "./announce": "./src/announce.ts"
   },
   "engines": { "node": ">=24" },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "bundle": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist-bundle/main.js --external:bufferutil --external:utf-8-validate --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\"",
+    "build": "tsc -p tsconfig.json && npm run owner",
+    "owner": "tsc -p owner/tsconfig.json && esbuild owner/app.ts --bundle --format=esm --target=es2022 --outfile=public/app.js",
+    "bundle": "esbuild src/main.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist-bundle/main.js --external:bufferutil --external:utf-8-validate --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\" && npm run owner",
     "start": "node dist/main.js",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc -p owner/tsconfig.json"
   },
   "dependencies": {
     "mqtt": "^5.16.1",

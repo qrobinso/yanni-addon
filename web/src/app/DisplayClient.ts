@@ -7,6 +7,7 @@ import {
   type AnnouncementOutcome, type ClientMessage, type DisplayState, type EntitySettings, type Gesture, type HaCommand,
   type HaRequest, type ServerMessage,
 } from '@yanni/server/protocol';
+import type { AnnounceCommand } from '@yanni/server/announce';
 
 type Listener<T> = (value: T) => void;
 
@@ -30,8 +31,8 @@ export interface DisplayClientEvents extends Record<string, unknown> {
   /** Settings changed elsewhere (or the merged set from welcome). Apply without sending them back. */
   settings: { values: Partial<EntitySettings>; origin: 'welcome' | 'homeassistant' | 'owner' };
   command: HaCommand;
-  /** The raw notify payload (the display parses it). */
-  announce: string;
+  /** A parsed, validated notify command (announce, nudge or cancel) for the announcement queue. */
+  announce: AnnounceCommand;
   haStatus: boolean;
   error: { code: string; message: string };
 }
@@ -188,7 +189,7 @@ export class DisplayClient extends Emitter<DisplayClientEvents> {
         return;
       case 'settings': return this.emit('settings', { values: m.values, origin: m.origin });
       case 'command':
-        if (m.command === 'announce') return this.emit('announce', (m as { payload: string }).payload);
+        if (m.command === 'announce') return this.emit('announce', m.announce);
         return this.emit('command', m.command);
       case 'ha.result': {
         const p = this.calls.get(m.id);

@@ -68,8 +68,9 @@ describe('DisplayClient', () => {
     expect(r.sockets[0].json()).toEqual({ type: 'settings', values: { chirp_volume: 40 } });
     r.sockets[0].push({ type: 'settings', values: { quiet_mode: true }, origin: 'homeassistant' });
     r.sockets[0].push({ type: 'command', command: 'force_sleep' });
-    r.sockets[0].push({ type: 'command', command: 'announce', payload: 'hi' });
-    expect(events).toEqual([{ values: { quiet_mode: true }, origin: 'homeassistant' }, 'force_sleep', 'hi']);
+    const cancel = { kind: 'cancel', id: 'dryer' };
+    r.sockets[0].push({ type: 'command', command: 'announce', announce: cancel });
+    expect(events).toEqual([{ values: { quiet_mode: true }, origin: 'homeassistant' }, 'force_sleep', cancel]);
   });
 
   test('drops sends while offline (the next hello carries everything)', () => {

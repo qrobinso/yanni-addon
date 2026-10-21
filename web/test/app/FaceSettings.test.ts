@@ -34,6 +34,22 @@ describe('FaceSettings', () => {
     expect(composeStyle({ mood_colour: false }, makeRenderStyle()).moodColorAmount).toBe(0);
   });
 
+  test('owner-page values land on the engine and the style (games, pupil shapes, background, preset)', () => {
+    const engine = new FaceEngine();
+    applyEngineSettings(engine, { antics_frequency: 2, game_yo_yo: false, game_hula_hoop_weight: 2.5, pupil_heart: false,
+      pupil_intensity: 50, mood_background_strength: 40, mood_background_colour: '#ff0000', brow_intensity: 0.5 }, false);
+    expect(engine.edgeAnticSettings.frequency).toBe(2);
+    expect(engine.idleGameSettings.yoYo.enabled).toBe(false);
+    expect(engine.idleGameSettings.hulaHoop.weight).toBe(2.5);
+    expect(engine.pupilReactionSettings.heart.enabled).toBe(false);
+    expect(engine.pupilReactionSettings.intensity).toBe(0.5);
+    expect(engine.moodBackground.strength).toBe(0.4);
+    expect(engine.moodBackground.fixedColor).toEqual({ x: 1, y: 0, z: 0 });
+    expect(engine.browIntensity).toBe(0.5);
+    const st = composeStyle({ theme_preset: 'sticker', ink_brows: true, mood_background: 'Mood', mood_background_vignette: 30 }, makeRenderStyle());
+    expect([st.rimWidth, st.inkWidth, st.browInk, st.backgroundVignette]).toEqual([0.35, 1.3, true, 0.3]);
+  });
+
   test('reports snake-case states and only what changed', () => {
     const engine = new FaceEngine();
     const life = new LifeCycleController(engine);
@@ -42,5 +58,16 @@ describe('FaceSettings', () => {
     const r = faceReport(engine, life);
     expect(r).toEqual({ face_state: 'half_awake', life_phase: 'half_awake', bedtime_active: false });
     expect(changed({ face_state: 'half_awake', life_phase: 'awake' }, r)).toEqual({ life_phase: 'half_awake', bedtime_active: false });
+  });
+});
+
+describe('RenderReport', () => {
+  test('fps over the sample interval, the tier p99 rounded, the tier name', async () => {
+    const { RenderReport } = await import('../../src/app/StatusReport');
+    let t = 0;
+    const clock = { ticks: 0, policy: { tier: 60 }, stats: { peek: () => ({ tier: () => ({ gapP99: 0.01834 }) }) } };
+    const r = new RenderReport(clock as never, () => t);
+    clock.ticks = 299; t = 5;
+    expect(r.sample()).toEqual({ fps: 60, frame_gap_p99_ms: 18.3, render_tier: 'awake' });
   });
 });

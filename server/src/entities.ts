@@ -1,9 +1,10 @@
 // The Home Assistant entity table: a port of YanniHome's HomeEntities (same components, names, options and
 // unique_ids, so an iPad migrated with its install ID keeps its entities). The Swift-only `signature_expires`
 // sensor is left out (a browser has no signing profile).
-import { ANNOUNCEMENT_OUTCOMES, FACE_STATES, GESTURES, HEALTH_OVERALL, LIFE_PHASES, MOOD_BACKGROUNDS, REPLY_VOICES,
-  RESTART_KINDS, SETTINGS_CHECKS, THERMAL_STATES, VOICE_SERVICES } from './protocol.js';
+import { ANNOUNCEMENT_OUTCOMES, FACE_STATES, GESTURES, HEALTH_OVERALL, LIFE_PHASES, RESTART_KINDS, THERMAL_STATES,
+  VOICE_SERVICES } from './protocol.js';
 import type { DisplayState, EntitySettings, HaCommand } from './protocol.js';
+import { HA_SETTING_KEYS, settingDef, type HaEntity, type SettingKey } from './settingsSchema.js';
 
 type Json = Record<string, unknown>;
 type Parsed = { value: unknown } | { error: string };
@@ -48,40 +49,57 @@ export function parseHHMM(s: string): number | undefined {
   return m ? Number(m[1]) * 60 + Number(m[2]) : undefined;
 }
 
-function toggle(c: keyof EntitySettings & string, name: string, opts: { config?: boolean; icon?: string } = {}): Entity {
-  const config: Json = { name };
-  if (opts.config) config.ent_cat = 'config';
-  if (opts.icon) config.ic = opts.icon;
-  return { component: c, platform: 'switch', config, setting: c, encode: onOff,
-    parse: (p) => { const b = parseOnOff(p); return b === undefined ? { error: 'expected ON or OFF' } : { value: b }; } };
+const parseBool = (p: string): Parsed => {
+  const b = parseOnOff(p);
+  return b === undefined ? { error: 'expected ON or OFF' } : { value: b };
+};
+
+/** A setting's entity, from its schema entry (switch, number, text HH:MM or select). */
+function settingEntity(key: SettingKey, ha: HaEntity): Entity {
+  const def = settingDef(key);
+  const config: Json = { name: ha.name };
+  switch (def.type) {
+    case 'bool':
+      if (ha.config) config.ent_cat = 'config';
+      if (ha.icon) config.ic = ha.icon;
+      return { component: key, platform: 'switch', config, setting: key, encode: onOff, parse: parseBool };
+    case 'number': {
+      const { min: lo, max: hi, step } = def;
+      Object.assign(config, { min: lo, max: hi, step, mode: ha.mode ?? 'box' });
+      if (def.unit) config.unit_of_meas = def.unit;
+      if (ha.config) config.ent_cat = 'config';
+      if (ha.icon) config.ic = ha.icon;
+      return { component: key, platform: 'number', config, setting: key, encode: (v) => formatNumber(Number(v), step),
+        parse: (p) => {
+          const v = Number(p.trim());
+          if (p.trim() === '' || !Number.isFinite(v)) return { error: 'expected a number' };
+          if (v < lo - step / 2 || v > hi + step / 2) return { error: 'out of range' };
+          return { value: Math.round(Math.min(Math.max(v, lo), hi) / step) * step };
+        } };
+    }
+    case 'time':
+      Object.assign(config, { ent_cat: 'config', min: 5, max: 5, pattern: '^([01]\\d|2[0-3]):[0-5]\\d$', ic: ha.icon });
+      return { component: key, platform: 'text', config, setting: key, encode: hhmm,
+        parse: (p) => { const m = parseHHMM(p); return m === undefined ? { error: 'expected HH:MM' } : { value: m }; } };
+    case 'enum': {
+      const ops = def.options;
+      Object.assign(config, { ent_cat: 'config', ops: [...ops], ic: ha.icon });
+      return { component: key, platform: 'select', config, setting: key, encode: String,
+        parse: (p) => (ops.includes(p.trim()) ? { value: p.trim() } : { error: 'unknown option' }) };
+    }
+    default: throw new Error(`${key}: no Home Assistant platform for ${def.type}`);
+  }
 }
 
-function num(c: keyof EntitySettings & string, name: string, lo: number, hi: number, step: number, unit: string | null,
-  mode: 'box' | 'slider', opts: { config?: boolean; icon?: string } = {}): Entity {
-  const config: Json = { name, min: lo, max: hi, step, mode };
-  if (unit) config.unit_of_meas = unit;
-  if (opts.config ?? true) config.ent_cat = 'config';
-  if (opts.icon) config.ic = opts.icon;
-  return { component: c, platform: 'number', config, setting: c, encode: (v) => formatNumber(Number(v), step),
-    parse: (p) => {
-      const v = Number(p.trim());
-      if (p.trim() === '' || !Number.isFinite(v)) return { error: 'expected a number' };
-      if (v < lo - step / 2 || v > hi + step / 2) return { error: 'out of range' };
-      return { value: Math.round(Math.min(Math.max(v, lo), hi) / step) * step };
-    } };
-}
-
-function timeText(c: 'bedtime_start' | 'bedtime_end', name: string): Entity {
-  return { component: c, platform: 'text', setting: c, encode: hhmm,
-    config: { name, ent_cat: 'config', min: 5, max: 5, pattern: '^([01]\\d|2[0-3]):[0-5]\\d$', ic: 'mdi:clock-outline' },
-    parse: (p) => { const m = parseHHMM(p); return m === undefined ? { error: 'expected HH:MM' } : { value: m }; } };
-}
-
-function select(c: 'reply_voice' | 'mood_background', name: string, ops: readonly string[], icon: string): Entity {
-  return { component: c, platform: 'select', setting: c, encode: String,
-    config: { name, ent_cat: 'config', ops: [...ops], ic: icon },
-    parse: (p) => (ops.includes(p.trim()) ? { value: p.trim() } : { error: 'unknown option' }) };
-}
+const SETTING_ENTITIES: Entity[] = HA_SETTING_KEYS.map((k) => {
+  const e = settingEntity(k, settingDef(k).ha!);
+  // Consent rule: HA may only turn room understanding off (on needs an encrypted vision path, which doesn't exist yet).
+  if (k === 'room_understanding') e.parse = (p) => {
+    const b = parseOnOff(p);
+    return b === false ? { value: false } : { error: b ? 'only the display can turn this on' : 'expected ON or OFF' };
+  };
+  return e;
+});
 
 function button(c: HaCommand, name: string, icon: string): Entity {
   return { component: c, platform: 'button', config: { name, ic: icon }, button: c };
@@ -104,33 +122,7 @@ const PRESENCE: Entity[] = [
 ];
 
 const TABLE: Entity[] = [
-  toggle('bedtime', 'Bedtime', { icon: 'mdi:weather-night' }),
-  toggle('bedtime_schedule', 'Bedtime schedule', { config: true, icon: 'mdi:calendar-clock' }),
-  timeText('bedtime_start', 'Bedtime start'),
-  timeText('bedtime_end', 'Bedtime end'),
-  num('minutes_to_drowsy', 'Minutes to drowsy', 0.25, 120, 0.25, 'min', 'box'),
-  num('minutes_to_asleep', 'Minutes to asleep', 0.25, 120, 0.25, 'min', 'box'),
-  num('bedtime_awake_minutes', 'Bedtime awake minutes', 0.25, 30, 0.25, 'min', 'box'),
-  num('taps_to_wake', 'Taps to wake at bedtime', 1, 6, 1, null, 'slider'),
-  toggle('wake_on_motion_at_bedtime', 'Wake on motion at bedtime', { config: true }),
-  toggle('quiet_mode', 'Quiet mode', { icon: 'mdi:volume-off' }),
-  toggle('sounds', 'Sounds', { icon: 'mdi:music-note' }),
-  num('chirp_volume', 'Chirp volume', 0, 100, 1, '%', 'slider', { config: false }),
-  num('voice_volume', 'Voice volume', 0, 100, 1, '%', 'slider', { config: false }),
-  select('reply_voice', 'Reply voice', REPLY_VOICES, 'mdi:account-voice'),
-  toggle('listen_on_eye_contact', 'Start listening on eye contact', { config: true, icon: 'mdi:eye-outline' }),
-  toggle('mood_colour', 'Mood colour', { config: true, icon: 'mdi:palette' }),
-  num('mood_colour_strength', 'Mood colour strength', 0, 100, 1, '%', 'slider'),
-  select('mood_background', 'Mood background', MOOD_BACKGROUNDS, 'mdi:format-color-fill'),
-  toggle('mood_background_at_bedtime', 'Mood background at bedtime', { config: true, icon: 'mdi:weather-night' }),
-  toggle('eyebrows', 'Eyebrows', { config: true }),
-  toggle('listening_glow', 'Listening glow', { config: true, icon: 'mdi:microphone-outline' }),
-  toggle('screen_antics', 'Screen-edge antics', { config: true }),
-  toggle('pupil_reactions', 'Pupil reactions', { config: true }),
-  toggle('expressive_reactions', 'Expressive reactions', { config: true, icon: 'mdi:emoticon-wink-outline' }),
-  { ...toggle('room_understanding', 'Room understanding', { config: true, icon: 'mdi:camera-outline' }),
-    // Consent rule: HA may only turn it off (on needs an encrypted vision path, which doesn't exist yet).
-    parse: (p) => { const b = parseOnOff(p); return b === false ? { value: false } : { error: b ? 'only the display can turn this on' : 'expected ON or OFF' }; } },
+  ...SETTING_ENTITIES,
   button('force_sleep', 'Force sleep', 'mdi:sleep'),
   button('force_wake', 'Force wake', 'mdi:alarm'),
   button('wrong_reaction', 'Wrong reaction', 'mdi:hand-back-left-off'),
@@ -172,9 +164,6 @@ export function entities(sharePresence: boolean): Entity[] {
 }
 
 export const PRESENCE_ENTITIES = PRESENCE;
-
-// Every setting that HA exposes must also pass the display-side check after parsing.
-for (const e of TABLE) if (e.setting && !SETTINGS_CHECKS[e.setting]) throw new Error(`no check for ${e.setting}`);
 
 export interface Identity { id: string; installId: string; room: string }
 

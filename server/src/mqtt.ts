@@ -10,6 +10,8 @@ import { ADDON_AVAILABILITY, attributesTopic, availabilityTopic, discovery, enti
   type Entity, type Identity } from './entities.js';
 import type { DisplayState, EntitySettings, ServerMessage } from './protocol.js';
 import type { SettingsStore } from './store.js';
+import { parseAnnounce } from './announce.js';
+import { SETTING_DEFAULTS } from './settingsSchema.js';
 import { log } from './log.js';
 
 export interface Publisher {
@@ -36,7 +38,6 @@ interface Live {
 
 export const HEARTBEAT_MS = 60_000;
 export const FACE_STATE_MIN_MS = 1000;
-export const MAX_ANNOUNCE_BYTES = 8192;
 
 export class HomeBridge {
   private live = new Map<string, Live>();
@@ -165,15 +166,19 @@ export class HomeBridge {
   }
 
   private announce(identity: Identity, payload: Buffer): void {
-    const text = payload.length <= MAX_ANNOUNCE_BYTES ? payload.toString('utf8') : undefined;
-    if (text !== undefined && this.hooks.send(identity.id, { type: 'command', command: 'announce', payload: text })) {
-      log.info(`mqtt: announce for ${identity.id} (${payload.length} bytes)`); // never the text
+    const minutes = this.settings.get(identity.id).announcement_expiry_minutes ?? SETTING_DEFAULTS.announcement_expiry_minutes;
+    const cmd = parseAnnounce(new Uint8Array(payload), minutes * 60);
+    const fail = (id: string, reason: string) => this.pub.publish(stateTopic(identity, 'announcement'),
+      JSON.stringify({ event_type: 'failed', id, kind: 'announce', reason }), false);
+    if (cmd.kind === 'rejected') {
+      log.info(`mqtt: announce for ${identity.id} rejected (${cmd.reason})`); // never the text
+      return fail('', cmd.reason);
+    }
+    if (this.hooks.send(identity.id, { type: 'command', command: 'announce', announce: cmd })) {
+      log.info(`mqtt: ${cmd.kind} for ${identity.id} (${payload.length} bytes)`);
       return;
     }
-    let msgId = '';
-    try { const o = JSON.parse(text ?? ''); if (typeof o?.id === 'string') msgId = o.id.slice(0, 64); } catch { /* plain text */ }
-    this.pub.publish(stateTopic(identity, 'announcement'), JSON.stringify({ event_type: 'failed', id: msgId, kind: 'announce',
-      reason: text === undefined ? 'too_large' : 'unavailable' }), false);
+    if (cmd.kind === 'announce') fail(cmd.announcement.id, 'unavailable');
   }
 
   // ---- Outbound ----
@@ -220,6 +225,9 @@ export class HomeBridge {
   }
 }
 
+/** A broker URL without any user:password@ part (MQTT_URL may carry one). */
+export const redactUrl = (u: string) => u.replace(/\/\/[^@/]*@/, '//');
+
 export interface MqttCredentials { url: string; username?: string; password?: string }
 
 /** Supervisor-provided broker (`services: mqtt:want`), else MQTT_URL / MQTT_USERNAME / MQTT_PASSWORD. */
@@ -248,7 +256,7 @@ export function connectBroker(creds: MqttCredentials, make: (pub: Publisher) => 
     publish: (t, p, retain) => { client.publish(t, p, { qos: 1, retain }); },
     subscribe: (f) => { client.subscribe(f, { qos: 1 }); },
   });
-  client.on('connect', () => { log.info(`mqtt: connected to ${creds.url}`); bridge.connected(); });
+  client.on('connect', () => { log.info(`mqtt: connected to ${redactUrl(creds.url)}`); bridge.connected(); });
   client.on('message', (topic, payload, packet) => bridge.message(topic, payload, packet.retain));
   client.on('error', (e) => log.warn(`mqtt: ${e.message}`));
   return { client, bridge };

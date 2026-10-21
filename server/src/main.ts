@@ -65,7 +65,7 @@ const trusted = (env.INGRESS_TRUSTED ?? INGRESS_GATEWAY).split(',').map((s) => s
 const ingress = createIngressServer(deps, ownerRoot, trusted, (d) => {
   displays.disconnect(d.id);
   bridge?.remove({ id: d.id, installId: d.installId, room: d.room });
-});
+}, displays);
 ingress.listen(ingressPort, () => log.info(`ingress: http on port ${ingressPort} (trusting ${trusted.join(', ')})`));
 
 const stop = () => { relay?.stop(); display.close(); ingress.close(); process.exit(0); };

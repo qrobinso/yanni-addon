@@ -86,7 +86,27 @@ describe('MQTT commands', () => {
     const { bridge, sent } = rig();
     bridge.message('yanni/a1b2c3d4/force_sleep/set', Buffer.from('PRESS'), false);
     bridge.message('yanni/a1b2c3d4/announce/set', Buffer.from('Dinner is ready'), false);
-    expect(sent).toEqual([{ type: 'command', command: 'force_sleep' }, { type: 'command', command: 'announce', payload: 'Dinner is ready' }]);
+    expect(sent[0]).toEqual({ type: 'command', command: 'force_sleep' });
+    // Parsed on the add-on: a typed announce with the default expiry (30 min).
+    expect(sent[1]).toMatchObject({ type: 'command', command: 'announce',
+      announce: { kind: 'announce', announcement: { text: 'Dinner is ready', priority: 'normal', expiresIn: 1800, id: expect.stringMatching(/^msg-/) } } });
+  });
+
+  it('reports a rejected or undeliverable announcement as failed, never with its text', () => {
+    const { bridge, published, sent } = rig();
+    bridge.message('yanni/a1b2c3d4/announce/set', Buffer.from(JSON.stringify({ kind: 'cancel', id: 'bad id!' })), false);
+    bridge.message('yanni/a1b2c3d4/announce/set', Buffer.alloc(9000, 0x61), false);
+    const events = published.filter((p) => p.topic === 'yanni/a1b2c3d4/announcement/state').map((p) => JSON.parse(p.payload));
+    expect(events).toEqual([{ event_type: 'failed', id: '', kind: 'announce', reason: 'cancel needs a valid id' },
+      { event_type: 'failed', id: '', kind: 'announce', reason: 'too_large' }]);
+    expect(sent).toEqual([]);
+  });
+
+  it('uses the display\'s announcement expiry setting', () => {
+    const { bridge, settings, sent } = rig();
+    settings.merge(device.id, { announcement_expiry_minutes: 5 });
+    bridge.message('yanni/a1b2c3d4/announce/set', Buffer.from('{"kind":"announce","text":"Hi","id":"door","priority":"HIGH"}'), false);
+    expect(sent[0]).toMatchObject({ announce: { announcement: { id: 'door', priority: 'high', expiresIn: 300 } } });
   });
 
   it('pushes events unretained; gestures only while presence is shared', () => {

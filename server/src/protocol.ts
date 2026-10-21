@@ -1,9 +1,14 @@
 // The display <-> add-on WebSocket protocol (`/ws` on the display port). JSON text frames, plus binary frames for
 // Assist pipeline audio. The web app imports these types with `import type { … } from '@yanni/server/protocol'`
-// (npm workspace link; this file has no imports and no Node APIs, so Vite bundles it as is).
+// (npm workspace link; this file and its imports have no Node APIs, so Vite bundles them as is).
 //
 // Session: the display opens `/ws`, sends `hello` (with its device token) within 5 s, and gets `welcome`.
 // Anything before a valid hello closes the socket (code 4401).
+
+import { SETTING_KEYS, isValidSetting, settingDef, type Settings } from './settingsSchema.js';
+import type { AnnounceCommand } from './announce.js';
+
+export { MOOD_BACKGROUNDS, REPLY_VOICES } from './settingsSchema.js';
 
 export const PROTOCOL_VERSION = 1;
 
@@ -16,8 +21,6 @@ export const VOICE_SERVICES = ['connected', 'degraded', 'unreachable', 'not_conf
 export const GESTURES = ['wave', 'bye_wave', 'clap', 'arms_up', 'point', 'nod', 'thumbs_up', 'thumbs_down',
   'open_palm', 'peace', 'heart_hands', 'peekaboo', 'dance', 'high_five'] as const;
 export const ANNOUNCEMENT_OUTCOMES = ['delivered', 'expired', 'cancelled', 'failed'] as const;
-export const REPLY_VOICES = ['Spoken', 'Yanni'] as const;
-export const MOOD_BACKGROUNDS = ['Black', 'Mood', 'Fixed colour'] as const;
 export const HEALTH_OVERALL = ['ok', 'degraded', 'safe_mode'] as const;
 export const RESTART_KINDS = ['clean', 'reboot', 'crash', 'hang', 'self_restart'] as const;
 export const THERMAL_STATES = ['nominal', 'fair', 'serious', 'critical'] as const;
@@ -28,42 +31,10 @@ export type VoiceServicesState = (typeof VOICE_SERVICES)[number];
 export type Gesture = (typeof GESTURES)[number];
 export type AnnouncementOutcome = (typeof ANNOUNCEMENT_OUTCOMES)[number];
 
-/** The settings Home Assistant can see and change, in Home Assistant's units (keys = entity components). */
-export interface EntitySettings {
-  /** Device name is "Yanni ‹room›" (not an entity; a change republishes discovery). */
-  room: string;
-  /** Presence entities exist only while this is on (not an entity). */
-  share_presence: boolean;
-  bedtime: boolean;
-  bedtime_schedule: boolean;
-  /** Minutes after midnight (HA sees HH:MM). */
-  bedtime_start: number;
-  bedtime_end: number;
-  minutes_to_drowsy: number;
-  minutes_to_asleep: number;
-  bedtime_awake_minutes: number;
-  taps_to_wake: number;
-  wake_on_motion_at_bedtime: boolean;
-  quiet_mode: boolean;
-  /** Sounds on (= not muted). */
-  sounds: boolean;
-  /** Percent 0–100. */
-  chirp_volume: number;
-  voice_volume: number;
-  reply_voice: (typeof REPLY_VOICES)[number];
-  listen_on_eye_contact: boolean;
-  mood_colour: boolean;
-  mood_colour_strength: number;
-  mood_background: (typeof MOOD_BACKGROUNDS)[number];
-  mood_background_at_bedtime: boolean;
-  eyebrows: boolean;
-  listening_glow: boolean;
-  screen_antics: boolean;
-  pupil_reactions: boolean;
-  expressive_reactions: boolean;
-  /** Camera snapshots. HA may only turn it off (no encrypted vision path exists yet). */
-  room_understanding: boolean;
-}
+/** Every synced setting (the schema in settingsSchema.ts; `ha` marks the ones Home Assistant sees as entities).
+ *  `room` is the device name "Yanni ‹room›" (a change republishes discovery); `share_presence` gates the presence
+ *  entities. */
+export type EntitySettings = Settings;
 
 /** Live values the display reports (send only what changed). Null = unknown (nothing is published). */
 export interface DisplayState {
@@ -94,6 +65,20 @@ export interface DisplayState {
   gesture_reactions_per_hour: number;
   gesture_false_reports_per_hour: number;
   perception_recording: boolean;
+  /** Owner Status page only (not entities): the render loop (StatusReport.ts). */
+  fps: number;
+  frame_gap_p99_ms: number;
+  render_tier: string;
+}
+
+/** What the add-on keeps per display for the owner Status page (memory only). */
+export interface DisplayStatus {
+  online: boolean;
+  appVersion: string;
+  deviceModel: string;
+  connectedAt: string;
+  lastSeenAt: string;
+  state: Partial<DisplayState>;
 }
 
 export type HaCommand = 'force_sleep' | 'force_wake' | 'wrong_reaction';
@@ -129,8 +114,8 @@ export type ServerMessage =
   /** Settings changed elsewhere (Home Assistant or the owner pages). Apply without echoing back. */
   | { type: 'settings'; values: Partial<EntitySettings>; origin: 'homeassistant' | 'owner' }
   | { type: 'command'; command: HaCommand }
-  /** The raw notify payload (plain text or the JSON announce / nudge / cancel object; ≤ 8 KB). The display parses it. */
-  | { type: 'command'; command: 'announce'; payload: string }
+  /** A notify payload, parsed and validated by the add-on (announce.ts). The display queues or applies it. */
+  | { type: 'command'; command: 'announce'; announce: AnnounceCommand }
   | { type: 'ha.result'; id: number; success: true; result: unknown }
   | { type: 'ha.result'; id: number; success: false; error: { code: string; message: string } }
   | { type: 'ha.event'; id: number; event: unknown }
@@ -148,35 +133,10 @@ const oneOf = (list: readonly string[]): Check => (v) => typeof v === 'string' &
 const orNull = (c: Check): Check => (v) => v === null || c(v);
 const strList: Check = (v) => Array.isArray(v) && v.length <= 50 && v.every(isStr(64));
 
-export const SETTINGS_CHECKS: { [K in keyof EntitySettings]: Check } = {
-  room: (v) => typeof v === 'string' && v.trim().length > 0 && v.length <= 40,
-  share_presence: isBool,
-  bedtime: isBool,
-  bedtime_schedule: isBool,
-  bedtime_start: (v) => Number.isInteger(v) && isNum(0, 1439)(v),
-  bedtime_end: (v) => Number.isInteger(v) && isNum(0, 1439)(v),
-  minutes_to_drowsy: isNum(0.25, 120),
-  minutes_to_asleep: isNum(0.25, 120),
-  bedtime_awake_minutes: isNum(0.25, 30),
-  taps_to_wake: (v) => Number.isInteger(v) && isNum(1, 6)(v),
-  wake_on_motion_at_bedtime: isBool,
-  quiet_mode: isBool,
-  sounds: isBool,
-  chirp_volume: isNum(0, 100),
-  voice_volume: isNum(0, 100),
-  reply_voice: oneOf(REPLY_VOICES),
-  listen_on_eye_contact: isBool,
-  mood_colour: isBool,
-  mood_colour_strength: isNum(0, 100),
-  mood_background: oneOf(MOOD_BACKGROUNDS),
-  mood_background_at_bedtime: isBool,
-  eyebrows: isBool,
-  listening_glow: isBool,
-  screen_antics: isBool,
-  pupil_reactions: isBool,
-  expressive_reactions: isBool,
-  room_understanding: isBool,
-};
+export const SETTINGS_CHECKS = Object.fromEntries(SETTING_KEYS.map((k) => {
+  const def = settingDef(k);
+  return [k, (v: unknown) => isValidSetting(def, v)];
+})) as { [K in keyof EntitySettings]: Check };
 
 export const STATE_CHECKS: { [K in keyof DisplayState]: Check } = {
   face_state: oneOf(FACE_STATES),
@@ -204,6 +164,9 @@ export const STATE_CHECKS: { [K in keyof DisplayState]: Check } = {
   gesture_reactions_per_hour: isNum(0, 1e6),
   gesture_false_reports_per_hour: isNum(0, 1e6),
   perception_recording: isBool,
+  fps: isNum(0, 1000),
+  frame_gap_p99_ms: isNum(0, 1e6),
+  render_tier: isStr(32),
 };
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

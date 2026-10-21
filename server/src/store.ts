@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import type { EntitySettings } from './protocol.js';
+import { SETTINGS_CHECKS, type EntitySettings } from './protocol.js';
 
 export interface DeviceRecord {
   /** First 8 hex chars of installId: the MQTT node is `yanni_<id>`, topics `yanni/<id>/…`. */
@@ -55,7 +55,7 @@ export class Devices {
   /** A new 6-digit code (ingress only). `installId` adopts an existing Swift install's identity. */
   createCode(room: string, installId?: string): { code: string; expiresAt: number } | { error: string } {
     room = room.trim();
-    if (!room || room.length > 40) return { error: 'room must be 1-40 characters' };
+    if (!SETTINGS_CHECKS.room(room)) return { error: 'room must be 1-40 characters, no control characters' };
     const id = installId?.trim() || randomUUID();
     if (!/^[0-9a-fA-F-]{8,64}$/.test(id) || !/^[0-9a-fA-F]{8}/.test(id)) return { error: 'install ID must start with 8 hex digits' };
     if (this.get(id.slice(0, 8).toLowerCase())) return { error: 'a display with that install ID is already paired' };
@@ -72,6 +72,8 @@ export class Devices {
   /** Redeems a code for a device token (the display keeps it in local storage). */
   redeem(code: unknown, source: string): { device: DeviceRecord; token: string } | { error: string; status: number } {
     const t = this.now();
+    // Many sources (a scan): forget sources with no attempt in the last minute so the map stays small.
+    if (this.attempts.size > 1000) for (const [k, v] of this.attempts) if (!v.some((x) => t - x < 60_000)) this.attempts.delete(k);
     const recent = (this.attempts.get(source) ?? []).filter((x) => t - x < 60_000);
     if (recent.length >= PAIR_ATTEMPTS_PER_MINUTE) return { error: 'too many attempts, wait a minute', status: 429 };
     recent.push(t);
