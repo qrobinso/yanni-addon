@@ -1,0 +1,79 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "end_stage": "stt",
+      "id": 9,
+      "input": {
+        "no_vad": true,
+        "sample_rate": 16000
+      },
+      "start_stage": "stt",
+      "timeout": 60,
+      "type": "assist_pipeline/run"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 9,
+      "result": null,
+      "success": true,
+      "type": "result"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "language": "en",
+          "pipeline": "01JPIPE",
+          "runner_data": {
+            "stt_binary_handler_id": 1,
+            "timeout": 60
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-start"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "c2s",
+    "binary": "010000000000000000"
+  },
+  {
+    "dir": "c2s",
+    "binary": "01"
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "code": "stt-no-text-recognized",
+          "message": "No text recognized"
+        },
+        "timestamp": "2026-10-12T12:00:01.000000+00:00",
+        "type": "error"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": null,
+        "timestamp": "2026-10-12T12:00:01.000000+00:00",
+        "type": "run-end"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  }
+]

@@ -1,0 +1,70 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "end_stage": "tts",
+      "id": 12,
+      "input": {
+        "text": "Hello there, my friend!"
+      },
+      "start_stage": "tts",
+      "timeout": 60,
+      "type": "assist_pipeline/run"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 12,
+      "result": null,
+      "success": true,
+      "type": "result"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "language": "en",
+          "pipeline": "01JPIPE",
+          "runner_data": {
+            "stt_binary_handler_id": null,
+            "timeout": 60
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-start"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "code": "tts-not-supported",
+          "message": "Text-to-speech engine tts.piper does not support language en_US"
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "error"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": null,
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-end"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  }
+]

@@ -1,0 +1,84 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "conversation_id": null,
+      "end_stage": "intent",
+      "id": 7,
+      "input": {
+        "text": "what's the weather like today?"
+      },
+      "pipeline": "conversation.jev",
+      "start_stage": "intent",
+      "timeout": 60,
+      "type": "assist_pipeline/run"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 7,
+      "result": null,
+      "success": true,
+      "type": "result"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "conversation_id": "01JCONV0000000000000000001",
+          "language": "en",
+          "pipeline": "01JPIPE"
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-start"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "engine": "conversation.openai",
+          "language": "en"
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-start"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "code": "intent-failed",
+          "message": "Unexpected error during intent recognition"
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "error"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": null,
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-end"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  }
+]

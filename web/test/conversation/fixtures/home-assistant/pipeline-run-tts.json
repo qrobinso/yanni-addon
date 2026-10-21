@@ -1,0 +1,92 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "end_stage": "tts",
+      "id": 12,
+      "input": {
+        "text": "Hello there, my friend!"
+      },
+      "start_stage": "tts",
+      "timeout": 60,
+      "type": "assist_pipeline/run"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 12,
+      "result": null,
+      "success": true,
+      "type": "result"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "language": "en",
+          "pipeline": "01JPIPE",
+          "runner_data": {
+            "stt_binary_handler_id": null,
+            "timeout": 60
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-start"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "acknowledge_override": false,
+          "engine": "tts.piper",
+          "language": "en_US",
+          "tts_input": "Hello there, my friend!",
+          "voice": "en_US-lessac-medium"
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "tts-start"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "tts_output": {
+            "media_id": "media-source://tts/-stream-/<TOKEN>.mp3",
+            "mime_type": "audio/mpeg",
+            "token": "<TOKEN>.mp3",
+            "url": "/api/tts_proxy/<TOKEN>.mp3"
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "tts-end"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": null,
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-end"
+      },
+      "id": 12,
+      "type": "event"
+    }
+  }
+]

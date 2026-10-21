@@ -1,6 +1,9 @@
-// Port of ConversationTestSupport/TurnFakes.swift (the detector fakes; FakeTurnDetection comes with the controller).
+// Port of ConversationTestSupport/TurnFakes.swift.
 import type { TurnAudioWindow, TurnCompletionDetecting, VoiceActivityDetecting } from '../../../src/conversation/turn';
 import { TurnAudioFormat } from '../../../src/conversation/turn';
+import type { ConversationTurnDetection } from '../../../src/conversation/core/TurnDetection';
+import type { TurnDetectionStatus, TurnSignal, TurnTunables } from '../../../src/conversation/turn';
+import { makeTurnDetectionStatus, makeTurnTunables } from '../../../src/conversation/turn';
 
 /** A VAD that returns scripted probabilities, one per frame, then `idle` (deterministic, synchronous). */
 export class ScriptedVoiceActivity implements VoiceActivityDetecting {
@@ -43,5 +46,41 @@ export class ScriptedTurnCompletion implements TurnCompletionDetecting {
     if (v.latencyMs) await new Promise((r) => setTimeout(r, v.latencyMs));
     if (v.fails) throw new Error('scripted failure');
     return v.probability;
+  }
+}
+
+// MARK: - FakeTurnDetection (TurnFakes.swift)
+
+
+/** The turn detector as the controller sees it: records every call and lets a test play the detector's signals. */
+export class FakeTurnDetection implements ConversationTurnDetection {
+  onSignal: ((s: TurnSignal) => void) | null = null;
+  status: TurnDetectionStatus = makeTurnDetectionStatus({ availability: { kind: 'ready' }, phase: 'off' });
+  listening = false;
+  listeningChanges: boolean[] = [];
+  prepares = 0;
+  localAudibleUntil = -Infinity;
+  tunables: TurnTunables = makeTurnTunables();
+  /** The live mic level the test plays (0…1). */
+  inputLevel = 0;
+
+  setListening(on: boolean): void {
+    if (on === this.listening) return;
+    this.listening = on;
+    this.listeningChanges.push(on);
+    this.status.phase = on ? 'quiet' : 'off';
+  }
+  prepare(): void { this.prepares += 1; }
+  setLocalSoundAudibleUntil(hostTime: number): void { this.localAudibleUntil = hostTime; }
+  setTunables(t: TurnTunables): void { this.tunables = t; }
+
+  emit(s: TurnSignal): void { this.onSignal?.(s); }
+
+  /** A user turn starts; `at` is the onset (start of the confirmed run). */
+  speechStarted(at: number, echoRule = false): void { this.emit({ kind: 'speechStarted', at, echoRule }); }
+
+  /** The user's turn ends: speech ended at `speechEnd`, Smart Turn's verdict at `verdictAt`. */
+  turnEnded(speechEnd: number, verdictAt: number, p = 0.9, inferenceMs = 12): void {
+    this.emit({ kind: 'turnEnded', end: { speechEnd, verdictAt, reason: { kind: 'complete', probability: p }, inferenceMs } });
   }
 }

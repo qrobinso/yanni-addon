@@ -1,0 +1,104 @@
+/* The caption bubbles (port of CaptionModel.swift / CaptionBubble.swift). Nunito is registered from TS
+   (CaptionFonts.load) so its URL follows the add-on's base path. */
+.caption-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  font-family: ui-rounded, 'Nunito', 'SF Pro Rounded', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.caption-stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.caption-slot, .caption-pop { position: relative; }
+.caption-pop { transform-origin: 50% 100%; }
+.caption-you { position: relative; }
+.caption-you > * { position: absolute; left: 0; bottom: 0; transform-origin: 50% 100%; }
+
+.caption-bubble {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.caption-ink { position: absolute; z-index: 0; }
+.caption-header, .caption-words-frame { position: relative; z-index: 1; }
+.caption-header {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--h) * 0.5);
+  height: calc(var(--h) * 1.25);
+  font-size: var(--h);
+  line-height: 1;
+  white-space: nowrap;
+}
+.caption-name {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: calc(var(--h) * 0.06);
+  color: rgb(18 18 20);
+}
+.caption-dot { width: calc(var(--h) * 0.6); height: calc(var(--h) * 0.6); border-radius: 50%; flex: none; }
+.caption-bars { display: flex; align-items: center; height: var(--h); }
+.caption-bars > span { display: block; border-radius: 999px; }
+.caption-label { font-weight: 600; color: rgb(107 110 117); }
+
+/* The words: bottom-aligned and clipped, so the latest lines stay in view. */
+.caption-words-frame {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  font-size: var(--f);
+}
+/* port-note: line-height pinned near SF Rounded's natural 1.19 so Nunito's taller metrics don't change the fit. */
+.caption-words {
+  font-weight: 800;
+  line-height: 1.2;
+  color: rgb(18 18 20);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.caption-rest { color: transparent; }
+.caption-measure {
+  position: absolute;
+  left: -100000px;
+  top: 0;
+  visibility: hidden;
+}
+
+.caption-pill {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: rgb(20 20 20);
+  border-style: solid;
+  border-color: rgb(140 140 140);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.caption-pill-name { font-weight: 900; text-transform: uppercase; color: #fff; flex: none; }
+.caption-pill-words {
+  font-weight: 400;
+  color: rgb(255 255 255 / 0.92);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.caption-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

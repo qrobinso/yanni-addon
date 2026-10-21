@@ -1,0 +1,105 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "end_stage": "stt",
+      "id": 9,
+      "input": {
+        "no_vad": true,
+        "sample_rate": 16000
+      },
+      "start_stage": "stt",
+      "timeout": 60,
+      "type": "assist_pipeline/run"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 9,
+      "result": null,
+      "success": true,
+      "type": "result"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "language": "en",
+          "pipeline": "01JPIPE",
+          "runner_data": {
+            "stt_binary_handler_id": 1,
+            "timeout": 60
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-start"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "audio_processing": {
+            "requires_external_vad": true
+          },
+          "engine": "stt.faster_whisper",
+          "metadata": {
+            "bit_rate": 16,
+            "channel": 1,
+            "codec": "pcm",
+            "format": "wav",
+            "language": "en",
+            "sample_rate": 16000
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "stt-start"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "c2s",
+    "binary": "0100000100020003000400050006000700"
+  },
+  {
+    "dir": "c2s",
+    "binary": "01"
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "stt_output": {
+            "text": "what's the weather like today?"
+          }
+        },
+        "timestamp": "2026-10-12T12:00:01.000000+00:00",
+        "type": "stt-end"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": null,
+        "timestamp": "2026-10-12T12:00:01.000000+00:00",
+        "type": "run-end"
+      },
+      "id": 9,
+      "type": "event"
+    }
+  }
+]

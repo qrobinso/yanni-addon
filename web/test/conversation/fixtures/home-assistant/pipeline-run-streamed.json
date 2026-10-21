@@ -1,0 +1,223 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "conversation_id": null,
+      "end_stage": "intent",
+      "id": 7,
+      "input": {
+        "text": "what's the weather like today?"
+      },
+      "pipeline": "conversation.jev",
+      "start_stage": "intent",
+      "timeout": 60,
+      "type": "assist_pipeline/run"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 7,
+      "result": null,
+      "success": true,
+      "type": "result"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "conversation_id": "01JCONV0000000000000000001",
+          "language": "en",
+          "pipeline": "01JPIPE",
+          "runner_data": {
+            "stt_binary_handler_id": null,
+            "timeout": 60
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-start"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "conversation_id": "01JCONV0000000000000000001",
+          "device_id": null,
+          "engine": "conversation.jev",
+          "intent_input": "what's the weather like today?",
+          "language": "en",
+          "prefer_local_intents": false
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-start"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "chat_log_delta": {
+            "role": "assistant",
+            "thinking_content": "Not a device command; falling back."
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-progress"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "chat_log_delta": {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_1",
+                "tool_args": {},
+                "tool_name": "GetLiveContext"
+              }
+            ]
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-progress"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "chat_log_delta": {
+            "agent_id": "conversation.openai",
+            "role": "tool_result",
+            "tool_call_id": "call_1",
+            "tool_name": "GetLiveContext",
+            "tool_result": {
+              "result": "weather: sunny, 21 \u00b0C",
+              "success": true
+            }
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-progress"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "chat_log_delta": {
+            "content": "It's sunny",
+            "role": "assistant"
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-progress"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "chat_log_delta": {
+            "content": " and warm, about 21 degrees."
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-progress"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "chat_log_delta": {
+            "content": " Perfect for a walk!"
+          }
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-progress"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": {
+          "intent_output": {
+            "continue_conversation": false,
+            "conversation_id": "01JCONV0000000000000000001",
+            "response": {
+              "card": {},
+              "data": {
+                "failed": [],
+                "success": [],
+                "targets": []
+              },
+              "language": "en",
+              "response_type": "action_done",
+              "speech": {
+                "plain": {
+                  "extra_data": null,
+                  "speech": "It's sunny and warm, about 21 degrees. Perfect for a walk!"
+                }
+              }
+            }
+          },
+          "processed_locally": false
+        },
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "intent-end"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "event": {
+        "data": null,
+        "timestamp": "2026-10-12T12:00:00.000000+00:00",
+        "type": "run-end"
+      },
+      "id": 7,
+      "type": "event"
+    }
+  }
+]

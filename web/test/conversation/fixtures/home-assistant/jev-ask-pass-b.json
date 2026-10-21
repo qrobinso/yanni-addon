@@ -1,0 +1,104 @@
+[
+  {
+    "dir": "c2s",
+    "msg": {
+      "domain": "jev",
+      "id": 9,
+      "return_response": true,
+      "service": "ask",
+      "service_data": {
+        "questions": "<decision-questions.json passB>",
+        "state": {
+          "character": "\u2026",
+          "recent": [],
+          "yanni_says": "Yes, absolutely!"
+        }
+      },
+      "type": "call_service"
+    }
+  },
+  {
+    "dir": "s2c",
+    "msg": {
+      "id": 9,
+      "result": {
+        "context": {
+          "id": "01J0000000000000000000000B",
+          "parent_id": null,
+          "user_id": "<USER_ID>"
+        },
+        "response": {
+          "answers": {
+            "feel": {
+              "choice": "Happiness",
+              "confidence": 0.55,
+              "probabilities": {
+                "Amazement": 0.02,
+                "Annoyance": 0.0,
+                "Confusion": 0.05,
+                "Embarrassment": 0.0,
+                "Excitement": 0.1,
+                "Happiness": 0.55,
+                "Neutral": 0.25,
+                "Sadness": 0.0,
+                "Skepticism": 0.0,
+                "Surprise": 0.03
+              }
+            },
+            "intensity": {
+              "confidence": 0.48,
+              "legend": {
+                "0": "barely",
+                "1": "a little",
+                "2": "clearly",
+                "3": "strongly",
+                "4": "intensely"
+              },
+              "nearest_level": "clearly",
+              "normalized": 0.52,
+              "probabilities": {
+                "0": 0.04,
+                "1": 0.18,
+                "2": 0.48,
+                "3": 0.22,
+                "4": 0.08
+              },
+              "score": 2.1
+            },
+            "reaction": {
+              "choice": "none",
+              "confidence": 0.88,
+              "probabilities": {
+                "affection": 0.02,
+                "curiosity": 0.05,
+                "delight": 0.05,
+                "none": 0.88,
+                "reveal": 0.0,
+                "success": 0.0
+              }
+            },
+            "stance": {
+              "choice": "strongYes",
+              "confidence": 0.55,
+              "probabilities": {
+                "no": 0.03,
+                "none": 0.05,
+                "strongNo": 0.02,
+                "strongYes": 0.55,
+                "yes": 0.35
+              }
+            }
+          },
+          "latency_ms": 31,
+          "model": "kev-latest",
+          "usage": {
+            "input_tokens": 380,
+            "output_tokens": 0
+          }
+        }
+      },
+      "success": true,
+      "type": "result"
+    }
+  }
+]

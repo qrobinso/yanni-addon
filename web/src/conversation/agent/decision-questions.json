@@ -1,0 +1,231 @@
+{
+  "version": 4,
+  "note": "Yanni's decision-model question set (decision-model design §4, expressive decisions design §6; version 1 was the server's questions.yaml, 2 adds Pass B stance, 3 adds Pass B brow and gaze and the expressive set, 4 adds Pass A closing). Shapes follow HA-Jev's jev.ask: noul meanings as top-level true/false, choice and score use criteria (2-255 options, 2-10 levels). Any wording change bumps version and needs the eval set rerun.",
+  "character": "Yanni is a small, playful, warm, family-friendly creature who lives in an iPad and is only two big expressive eyes. People in the room talk to Yanni and to each other; Yanni answers only what is said to it.",
+  "passA": {
+    "addressed": {
+      "type": "noul",
+      "instructions": "Is this utterance said to Yanni (rather than to someone else in the room, or the TV)?",
+      "true": "It is said to Yanni: a question, request, greeting or remark meant for Yanni.",
+      "false": "It is said to someone else, is background speech, or is the person talking to themselves."
+    },
+    "understood": {
+      "type": "noul",
+      "instructions": "Is the utterance intelligible and complete enough to answer?",
+      "true": "It makes sense and is complete enough to answer.",
+      "false": "It is garbled, cut off, or too fragmentary to answer."
+    },
+    "intent": {
+      "type": "choice",
+      "instructions": "What is the person doing with this utterance?",
+      "criteria": {
+        "greeting": "saying hello",
+        "question": "asking something",
+        "request": "asking Yanni to do something",
+        "joke": "making a joke",
+        "compliment": "praising Yanni",
+        "teasing": "playfully teasing Yanni",
+        "goodNews": "sharing good news",
+        "badNews": "sharing bad or sad news",
+        "goodbye": "saying goodbye",
+        "other": "anything else"
+      }
+    },
+    "feel": {
+      "type": "choice",
+      "instructions": "How does Yanni feel hearing it? (Yanni's own feeling, not the speaker's.)",
+      "criteria": {
+        "Happiness": null,
+        "Excitement": null,
+        "Amazement": null,
+        "Surprise": null,
+        "Confusion": null,
+        "Embarrassment": null,
+        "Sadness": null,
+        "Skepticism": null,
+        "Annoyance": null,
+        "Neutral": null
+      }
+    },
+    "intensity": {
+      "type": "score",
+      "instructions": "How strongly does Yanni feel it?",
+      "criteria": [
+        "barely",
+        "a little",
+        "clearly",
+        "strongly",
+        "intensely"
+      ]
+    },
+    "reaction": {
+      "type": "choice",
+      "instructions": "Is this a moment, shared with Yanni, for a playful reaction beat? Answer as how Yanni would react: sad or worrying news is none even when it mentions a pet or a song.",
+      "criteria": {
+        "none": "no reaction beat",
+        "delight": "something delightful or exciting",
+        "affection": "clearly affectionate toward Yanni",
+        "reveal": "a sudden reveal or surprise shown to Yanni",
+        "curiosity": "playful curiosity or anticipation",
+        "success": "a shared success"
+      }
+    },
+    "closing": {
+      "type": "choice",
+      "instructions": "Is the speaker ending the conversation with Yanni or dismissing it (for example: go away, that's all, nothing else, never mind, bye, stop, thanks that's it)?",
+      "criteria": {
+        "no": "not ending the conversation: a question, request or remark for Yanni to answer",
+        "only": "only ending the conversation or dismissing Yanni, with nothing else to answer or do",
+        "withRequest": "asks Yanni to do or answer something and also signs off (for example: turn off the lights and that's all)"
+      }
+    }
+  },
+  "passB": {
+    "feel": {
+      "type": "choice",
+      "instructions": "How does Yanni feel saying this sentence?",
+      "criteria": {
+        "Happiness": null,
+        "Excitement": null,
+        "Amazement": null,
+        "Surprise": null,
+        "Confusion": null,
+        "Embarrassment": null,
+        "Sadness": null,
+        "Skepticism": null,
+        "Annoyance": null,
+        "Neutral": null
+      }
+    },
+    "intensity": {
+      "type": "score",
+      "instructions": "How strongly does Yanni feel it while saying this sentence?",
+      "criteria": [
+        "barely",
+        "a little",
+        "clearly",
+        "strongly",
+        "intensely"
+      ]
+    },
+    "reaction": {
+      "type": "choice",
+      "instructions": "Does this sentence carry a playful reaction beat (for example \"aww, I love you too\" is affection)?",
+      "criteria": {
+        "none": "no reaction beat",
+        "delight": "something delightful or exciting",
+        "affection": "clearly affectionate",
+        "reveal": "a sudden reveal or surprise",
+        "curiosity": "playful curiosity or anticipation",
+        "success": "a shared success"
+      }
+    },
+    "stance": {
+      "type": "choice",
+      "instructions": "Does this sentence, as Yanni says it, answer a yes/no question?",
+      "criteria": {
+        "none": "anything else",
+        "yes": "agreeing or confirming",
+        "strongYes": "agreeing or confirming enthusiastically",
+        "no": "declining or denying gently",
+        "strongNo": "declining or denying firmly (playfully stern)"
+      }
+    },
+    "brow": {
+      "type": "choice",
+      "instructions": "Which eyebrow move fits Yanni saying this sentence?",
+      "criteria": {
+        "none": "no brow move",
+        "raise": "both brows up: pleased surprise or interest",
+        "sceptical": "one brow up: really? playful doubt",
+        "furrow": "brows down and together: concentrating or mock-stern",
+        "worried": "inner ends up: soft concern or shyness"
+      }
+    },
+    "gaze": {
+      "type": "choice",
+      "instructions": "Where would Yanni's eyes go while saying this sentence?",
+      "criteria": {
+        "none": "keep looking as before",
+        "lookAt": "look right at them",
+        "lookAway": "look away shyly",
+        "glanceAround": "a quick look aside",
+        "eyeRoll": "a playful eye-roll"
+      }
+    }
+  },
+  "expressive": {
+    "react": {
+      "type": "choice",
+      "instructions": "Yanni sees what the state describes (nothing was said). Which kind of visual response fits Yanni best?",
+      "criteria": {
+        "delight": "delighted, happy to see it",
+        "curiosity": "curious, wants to know more",
+        "playful": "playful and bouncy",
+        "shy": "shy and flattered",
+        "sceptical": "playfully sceptical",
+        "sympathetic": "sympathetic, gently concerned",
+        "ignore": "not worth a reaction"
+      }
+    },
+    "intensity": {
+      "type": "score",
+      "instructions": "How big should Yanni's reaction be?",
+      "criteria": [
+        "barely",
+        "a little",
+        "clearly",
+        "strongly",
+        "very strongly"
+      ]
+    },
+    "brow": {
+      "type": "choice",
+      "instructions": "Which eyebrow move fits the reaction?",
+      "criteria": {
+        "none": "no brow move",
+        "raise": "both brows up: pleased surprise or interest",
+        "sceptical": "one brow up: really? playful doubt",
+        "furrow": "brows down and together: concentrating or mock-stern",
+        "worried": "inner ends up: soft concern or shyness"
+      }
+    },
+    "gaze": {
+      "type": "choice",
+      "instructions": "Where should Yanni's eyes go?",
+      "criteria": {
+        "none": "keep looking as before",
+        "lookAt": "look right at them",
+        "lookAway": "look away shyly",
+        "glanceAround": "a quick look aside",
+        "eyeRoll": "a playful eye-roll"
+      }
+    },
+    "pupil": {
+      "type": "choice",
+      "instructions": "Should Yanni's pupils change shape for a moment? Only for a clearly special moment.",
+      "criteria": {
+        "none": "no change",
+        "stars": "star eyes: delight",
+        "hearts": "heart eyes: affection",
+        "question": "question marks: puzzled",
+        "exclaim": "exclamation marks: a surprise",
+        "notes": "music notes: music or dancing"
+      }
+    },
+    "move": {
+      "type": "choice",
+      "instructions": "Which small whole-face move fits, if any?",
+      "criteria": {
+        "none": "no move",
+        "perk": "perk up",
+        "bounce": "a happy bounce",
+        "tilt": "a curious tilt",
+        "dance": "a little dance",
+        "doubleTake": "a double take",
+        "nod": "a nod",
+        "shake": "a head shake"
+      }
+    }
+  }
+}
