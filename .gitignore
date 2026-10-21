@@ -6,12 +6,15 @@ dist/
 .DS_Store
 server/dist-bundle/
 
-# Turn-detection models and the onnxruntime-web runtime (web/scripts/fetch-models.mjs)
+# Turn-detection and MediaPipe models, the onnxruntime-web and tasks-vision runtimes (web/scripts/fetch-models.mjs)
 web/public/models/
 web/public/ort/
+web/public/mediapipe/
 
 # Render parity outputs (web/test/render/parity/run.mjs)
 web/test/render/parity/out/
 
 # Kiosk smoke screenshots (web/scripts/kiosk-smoke.mjs)
 web/test/app/out/
+server/public/app.js
+server/test/out/

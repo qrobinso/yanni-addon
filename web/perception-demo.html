@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yanni perception demo</title>
+<style>
+  html, body { margin: 0; background: #0b0b0d; color: #ddd; font: 12px ui-monospace, Menlo, monospace; }
+  main { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 10px; padding: 10px; }
+  #view { position: relative; aspect-ratio: 4 / 3; background: #000; border-radius: 6px; overflow: hidden; }
+  #view video, #view canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #view video { transform: scaleX(-1); object-fit: fill; }
+  #face { width: 100%; aspect-ratio: 16 / 10; display: block; background: #000; border-radius: 6px; }
+  section { background: #16161a; border-radius: 6px; padding: 8px; margin-bottom: 10px; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #888; margin: 0 0 6px; }
+  table { border-collapse: collapse; width: 100%; } td, th { padding: 2px 4px; text-align: left; }
+  th { color: #888; font-weight: normal; }
+  #log { height: 220px; overflow: auto; white-space: pre-wrap; margin: 0; }
+  #stats { white-space: pre-wrap; margin: 0; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <div id="view"><video id="video" muted playsinline></video><canvas id="overlay"></canvas></div>
+    <section><h2>People</h2><table id="people"></table></section>
+  </div>
+  <div>
+    <canvas id="face"></canvas>
+    <section><h2>Pipeline</h2><pre id="stats">starting…</pre></section>
+    <section><h2>Events</h2><pre id="log"></pre></section>
+  </div>
+</main>
+<script type="module" src="/src/perception/web/demo.ts"></script>
+</body>
+</html>

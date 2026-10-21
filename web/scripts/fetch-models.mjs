@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Downloads the pinned turn-detection ONNX models into web/public/models/ and verifies each SHA-256
 // (pins from yanni Packages/YanniConversation/Tools/turn-models/pins.json), then copies onnxruntime-web's wasm runtime
-// into web/public/ort/ so the add-on serves everything itself (no CDN). Both folders are gitignored.
+// into web/public/ort/ so the add-on serves everything itself (no CDN). Also the pinned MediaPipe Tasks Vision models
+// (perception) into web/public/models/ and the tasks-vision wasm runtime into web/public/mediapipe/. All gitignored.
 // Usage: node web/scripts/fetch-models.mjs   (idempotent: verified files are kept)
 import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, readdir, rename, writeFile } from 'node:fs/promises';
@@ -26,6 +27,16 @@ export const MODELS = [
     sha256: 'ab8dc64b88713f90b571c15b714bd1330e6c883cad8763dacf65c9376dc539be',
   },
 ];
+// MediaPipe model cards' versioned paths ("/1/", not "/latest/"; same bytes today), Apache-2.0.
+const MP = 'https://storage.googleapis.com/mediapipe-models';
+MODELS.push(
+  { file: 'face_landmarker.task', url: `${MP}/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+    sha256: '64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff' },
+  { file: 'hand_landmarker.task', url: `${MP}/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+    sha256: 'fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1' },
+  { file: 'pose_landmarker_lite.task', url: `${MP}/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task`,
+    sha256: '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a' },
+);
 
 const sha = (buf) => createHash('sha256').update(buf).digest('hex');
 
@@ -54,6 +65,16 @@ async function copyRuntime() {
   console.log(`copied  ${files.length} onnxruntime-web runtime files to public/ort/`);
 }
 
+async function copyMediaPipe() {
+  const dist = join(dirname(createRequire(import.meta.url).resolve('@mediapipe/tasks-vision')), 'wasm');
+  const out = join(pub, 'mediapipe');
+  await mkdir(out, { recursive: true });
+  const files = await readdir(dist);
+  for (const f of files) await copyFile(join(dist, f), join(out, f));
+  console.log(`copied  ${files.length} tasks-vision wasm files to public/mediapipe/`);
+}
+
 await mkdir(join(pub, 'models'), { recursive: true });
 for (const m of MODELS) await fetchModel(m);
 await copyRuntime();
+await copyMediaPipe();

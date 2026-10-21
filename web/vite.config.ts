@@ -13,9 +13,13 @@ export default defineConfig({
         index: resolve(import.meta.dirname, 'index.html'),
         'render-demo': resolve(import.meta.dirname, 'render-demo.html'),
         'turn-demo': resolve(import.meta.dirname, 'turn-demo.html'),
+        'perception-demo': resolve(import.meta.dirname, 'perception-demo.html'),
+        'voice-demo': resolve(import.meta.dirname, 'voice-demo.html'),
       },
     },
   },
+  // The perception worker is an ES module (tasks-vision imports its wasm loader there).
+  worker: { format: 'es' },
   server: { headers: isolation },
   preview: { headers: isolation },
   test: { include: ['test/**/*.test.ts'] },
