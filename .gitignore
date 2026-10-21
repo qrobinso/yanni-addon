@@ -18,3 +18,6 @@ web/test/render/parity/out/
 web/test/app/out/
 server/public/app.js
 server/test/out/
+
+# Playwright MCP session output
+.playwright-mcp/

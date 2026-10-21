@@ -21,7 +21,7 @@ import { ConversationAudio } from '../conversation/audio/ConversationAudio';
 import { DisplayClient } from './DisplayClient';
 import { applyEngineSettings, changed, composeStyle, faceReport, lifeSettings } from './FaceSettings';
 import { Hud } from './Hud';
-import { describeFace, fullscreenOnTap, keepScreenOn, lockDownGestures, motion, unlockAudio } from './Kiosk';
+import { describeFace, keepScreenOn, lockDownGestures, motion, unlockAudio } from './Kiosk';
 import { OwnerAccess } from './OwnerAccess';
 import { OwnerMenu } from './OwnerMenu';
 import { forgetPairing, loadPairing, showPairing, storage } from './Pairing';
@@ -179,7 +179,6 @@ setInterval(() => {
 
 // ---- Kiosk ----
 keepScreenOn();
-fullscreenOnTap();
 lockDownGestures();
 unlockAudio(audio.context, document.getElementById('audio-hint')!);
 

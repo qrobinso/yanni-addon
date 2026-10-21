@@ -41,7 +41,7 @@ export function showPairing(root: HTMLElement): Promise<Pairing> {
     form.innerHTML = `<h1>Pair this display</h1>
       <p>Open Yanni in Home Assistant and enter the code it shows.</p>
       <label for="pair-code">Pairing code</label>
-      <input id="pair-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+      <input id="pair-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,6}" maxlength="6" required>
       <button type="submit">Pair</button>
       <p class="pair-error" role="alert"></p>`;
     const input = form.querySelector('input')!;

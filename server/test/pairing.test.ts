@@ -31,6 +31,16 @@ describe('pairing', () => {
     expect(new Devices(dir).authenticate(r.token)?.id).toBe(r.device.id);
   });
 
+  it('a test code pairs a new display every time, only when configured', () => {
+    const { dir } = rig();
+    const devices = new Devices(dir, Date.now, '1111');
+    const a = devices.redeem('1111', 'a'), b = devices.redeem('1111', 'a');
+    if ('error' in a || 'error' in b) throw new Error('test code refused');
+    expect(a.device.room).toBe('Test');
+    expect(a.device.id).not.toBe(b.device.id);
+    expect(new Devices(mkdtempSync(join(tmpdir(), 'yanni-'))).redeem('1111', 'a')).toMatchObject({ status: 403 });
+  });
+
   it('expires codes after 10 minutes', () => {
     const { clock, devices } = rig();
     const code = codeOf(devices.createCode('Hall'));

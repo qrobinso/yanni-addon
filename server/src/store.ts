@@ -44,7 +44,8 @@ export class Devices {
   private failures: number[] = [];
   private readonly path: string;
 
-  constructor(dataDir: string, private readonly now: () => number = Date.now) {
+  /** `testCode` (dev only, PAIR_TEST_CODE): a reusable code that pairs a new display in room "Test" every time. */
+  constructor(dataDir: string, private readonly now: () => number = Date.now, private readonly testCode?: string) {
     this.path = join(dataDir, 'devices.json');
     this.devices = readJSON<DeviceRecord[]>(this.path, []);
   }
@@ -79,7 +80,9 @@ export class Devices {
     recent.push(t);
     this.attempts.set(source, recent);
     this.prune();
-    const hit = typeof code === 'string' ? this.codes.find((c) => c.code === code) : undefined;
+    const hit = typeof code !== 'string' ? undefined
+      : this.testCode && code === this.testCode ? { code, room: 'Test', installId: randomUUID(), expiresAt: Infinity }
+      : this.codes.find((c) => c.code === code);
     if (!hit) {
       this.failures = this.failures.filter((x) => t - x < 10 * 60_000);
       this.failures.push(t);

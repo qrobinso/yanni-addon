@@ -63,6 +63,7 @@ To run locally end to end:
 1. `npm run build`
 2. `DATA_DIR=/tmp/yanni-data SSL_DIR=/nonexistent DISPLAY_PORT=8443 INGRESS_PORT=8099 INGRESS_TRUSTED=127.0.0.1 node server/dist/main.js`
 3. Get a pairing code: `curl -XPOST localhost:8099/api/codes -H 'content-type: application/json' -d '{"room":"Office"}'`
+   Or add `PAIR_TEST_CODE=1111` to step 2 and use `1111` (reusable, pairs into room "Test"; dev only, never in the add-on).
 4. Open http://localhost:8443 and enter the code.
 
 To use a real HA in dev, add `HA_URL=… HA_TOKEN=…` (and `MQTT_URL`, `MQTT_USERNAME`, `MQTT_PASSWORD`) to step 2. Append `?fakeha` to the display URL for a conversation loop that needs no HA. Append `?debug` for timings.

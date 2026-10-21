@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:yanni-addon}/tools/golden",
+            "name": "Debug golden-render (tools/golden)",
+            "target": "golden-render",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug golden-render (tools/golden)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:yanni-addon}/tools/golden",
+            "name": "Release golden-render (tools/golden)",
+            "target": "golden-render",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release golden-render (tools/golden)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:yanni-addon}/tools/golden",
+            "name": "Debug golden-record (tools/golden)",
+            "target": "golden-record",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug golden-record (tools/golden)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:yanni-addon}/tools/golden",
+            "name": "Release golden-record (tools/golden)",
+            "target": "golden-record",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release golden-record (tools/golden)"
+        }
+    ]
+}

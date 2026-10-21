@@ -27,7 +27,8 @@ const haWs = env.HA_URL ? `${env.HA_URL.replace(/^http/, 'ws').replace(/\/$/, ''
 const haHttp = env.HA_URL ? env.HA_URL.replace(/\/$/, '') : env.SUPERVISOR_TOKEN ? 'http://supervisor/core' : undefined;
 const haToken = env.HA_TOKEN ?? env.SUPERVISOR_TOKEN;
 
-const devices = new Devices(dataDir);
+const devices = new Devices(dataDir, Date.now, env.PAIR_TEST_CODE || undefined);
+if (env.PAIR_TEST_CODE) log.warn(`pair: test code ${env.PAIR_TEST_CODE} is on; anyone who can reach the display port can pair`);
 const settings = new SettingsStore(dataDir);
 const relay = haWs && haToken ? new HaRelay({ url: haWs, token: haToken }) : undefined;
 if (relay) relay.start(); else log.warn('ha: no SUPERVISOR_TOKEN or HA_URL/HA_TOKEN; the relay is off');

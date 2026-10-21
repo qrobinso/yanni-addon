@@ -1,4 +1,4 @@
-// Browser kiosk plumbing: keep the screen on, go full screen on the first tap, no zoom / selection / context menu,
+// Browser kiosk plumbing: keep the screen on, no zoom / selection / context menu,
 // unlock audio on the first gesture, and the Reduce Motion flag.
 
 /** Screen Wake Lock, re-acquired whenever the page becomes visible again (the browser drops it when hidden). */
@@ -8,14 +8,6 @@ export function keepScreenOn(): void {
   const acquire = () => { if (document.visibilityState === 'visible') wl.request('screen').catch(() => {}); };
   acquire();
   document.addEventListener('visibilitychange', acquire);
-}
-
-/** Full screen on the first tap (browsers allow it only from a gesture), and again after the user leaves it. */
-export function fullscreenOnTap(): void {
-  addEventListener('pointerup', () => {
-    if (document.fullscreenElement || !document.documentElement.requestFullscreen) return;
-    document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
-  }, { capture: true });
 }
 
 /** No pinch or double-tap zoom, text selection, callouts or context menu over the face (CSS does the rest). */
