@@ -8,6 +8,7 @@ import { FaceRenderer } from '../../render/FaceRenderer';
 import { NRect, PerceptionEvent, PerceptionTier, fmt, type FrameDetections, type PerceptionSnapshot } from '../PerceptionTypes';
 import { PerceptionSettings, type TierOverride } from '../PerceptionSettings';
 import { startPerception } from './startPerception';
+import { PerceptionHarness } from '../../app/PerceptionHarness';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const q = new URLSearchParams(location.search);
@@ -19,6 +20,11 @@ const life = new LifeCycleController(engine);
 const renderer = new FaceRenderer();
 const perception = startPerception(engine, life, { video: $<HTMLVideoElement>('video'), delegate: q.has('cpu') ? 'CPU' : 'GPU',
   worker: !q.has('main'), settings: new PerceptionSettings({ tierOverride: (q.get('tier') ?? 'auto') as TierOverride }) });
+
+// The measurement harness on the browser's storage (the smoke test records a session and replays it).
+const harness = new PerceptionHarness();
+harness.attach(perception);
+setInterval(() => harness.tick(performance.now() / 1000, () => perception.snapshot().people.map((p) => p.id)), 250);
 
 // The face preview (render-demo's pattern: one engine frame per refresh).
 renderer.init($<HTMLCanvasElement>('face')).then(() => {
@@ -107,4 +113,4 @@ setInterval(() => {
   ].join('\n');
 }, 250);
 
-Object.assign(globalThis, { perceptionDemo: perception });
+Object.assign(globalThis, { perceptionDemo: perception, perceptionDemoHarness: harness });

@@ -18,8 +18,6 @@ export interface PipelineInit {
   tier: PerceptionTier;
   lowMode: boolean;
   mirrored: boolean;
-  /** The browser can't read the camera's field of view: a setting (see MAPPING.md). */
-  horizontalFovDegrees: number;
   gazeFromBlendshapes: boolean;
 }
 
@@ -61,7 +59,7 @@ export class PerceptionPipeline {
     const pre = p.apply(r.commands.map(revive));
     const vacant = !p.lowMode && p.vacancy.isVacant(r.time);
     const plan = p.lowMode ? this.low.plan(r.time) : vacant ? StagePlan.vacant : StagePlan.plan(p.tier);
-    const intrinsics = CameraIntrinsics.fromFieldOfView(r.bitmap.width, r.bitmap.height, this.init.horizontalFovDegrees);
+    const intrinsics = CameraIntrinsics.fromFieldOfView(r.bitmap.width, r.bitmap.height, p.settings.horizontalFovDegrees);   // measured by calibration (MAPPING.md)
     let det;
     try {
       det = await this.detector.detect(r.bitmap, {

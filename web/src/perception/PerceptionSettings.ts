@@ -48,6 +48,9 @@ export class PerceptionSettings {
   wristROIPasses = false;
   /// Manual camera offset from the screen centre (metres, portrait device frame, x + right, y + down); beats the table.
   cameraOffsetOverride: V2 | null = null;
+  /// The camera's horizontal field of view (degrees). Web only: the browser can't read the lens, so the calibration
+  /// flow measures it (default 80°, a typical tablet front camera).
+  horizontalFovDegrees = 80;
   /// Calibrated estimator bias (degrees, yaw / pitch).
   estimatorBiasDegrees: V2 = { x: 0, y: 0 };
   /// Head-pose frame and sign corrections (from the on-device frame check).
@@ -70,6 +73,7 @@ export class PerceptionSettings {
   static readonly biasRange: Range = [-15, 15];
   static readonly levelRange: Range = [0.05, 0.95];
   static readonly faceRadiusRange: Range = [0.02, 0.3];
+  static readonly fovRange: Range = [40, 130];
 
   copy(): PerceptionSettings {
     const s = new PerceptionSettings(this);
@@ -109,6 +113,7 @@ export class PerceptionSettings {
     v.engageMaxDistance = c(this.engageMaxDistance, P.distanceRange, d.engageMaxDistance);
     v.releaseAfter = c(this.releaseAfter, P.releaseRange, d.releaseAfter);
     v.faceRadius = c(this.faceRadius, P.faceRadiusRange, d.faceRadius);
+    v.horizontalFovDegrees = c(this.horizontalFovDegrees, P.fovRange, d.horizontalFovDegrees);
     const o = this.cameraOffsetOverride;
     if (o !== null) {
       v.cameraOffsetOverride = Number.isFinite(o.x) && Number.isFinite(o.y)
@@ -195,6 +200,6 @@ const KEYS: readonly (keyof PerceptionSettingsFields)[] = [
   'enabled', 'tierOverride', 'maxPeople', 'eyeContactSigmaEyes', 'eyeContactSigmaHead', 'eyeContactEnter',
   'eyeContactExit', 'engageDwell', 'engageDwellHeadOnly', 'engageMaxDistance', 'releaseAfter', 'faceRadius',
   'gesturesEnabled', 'waveEnabled', 'thumbsUpEnabled', 'openPalmEnabled', 'pointEnabled', 'gestureReactionsEnabled',
-  'disabledGestures', 'wristROIPasses', 'cameraOffsetOverride', 'estimatorBiasDegrees', 'headPoseFrame', 'headYawSign',
+  'disabledGestures', 'wristROIPasses', 'cameraOffsetOverride', 'horizontalFovDegrees', 'estimatorBiasDegrees', 'headPoseFrame', 'headYawSign',
   'headPitchSign', 'cameraOffWhenAsleepAtBedtime', 'lookToTalkDryRun',
 ];

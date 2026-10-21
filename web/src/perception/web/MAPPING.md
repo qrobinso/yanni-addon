@@ -17,7 +17,7 @@ upright for the current orientation, so there is no rotation step (Vision needed
 | FrameDetections field | MediaPipe source | Notes |
 |---|---|---|
 | `time` | `requestVideoFrameCallback` `captureTime` (else the callback time), `performance.now()` seconds | The coordinator's clock is the same timeline. |
-| `intrinsics` | **none** | `CameraIntrinsics.fromFieldOfView(w, h, horizontalFovDegrees)`. The browser can't read the lens: default **80°** horizontal (typical tablet front cameras run 75–85°; iPad ultra-wide front cameras are ≈ 106° when Safari uses them without Center Stage cropping). Set `horizontalFovDegrees` per device. Distances and every angle scale with it. |
+| `intrinsics` | **none** | `CameraIntrinsics.fromFieldOfView(w, h, settings.horizontalFovDegrees)`. The browser can't read the lens: the perception setting `horizontalFovDegrees` (default **80°**; typical tablet front cameras run 75–85°, iPad ultra-wide front cameras ≈ 106° without Center Stage cropping) is **measured** by Tune → Perception → Camera offset & calibration → Camera field of view: standing alone at a taped mark, the pupil distance in pixels against the 63 mm adult mean gives the focal length (median over 3 s, yaw-corrected; ±15 % from the person's own IPD). Saved through the settings hub (`perception_tunables`); the worker reads it from the processor's settings, so it applies on the next frame. Distances and every angle scale with it. |
 | `faces[].box` | extent of the 478 face landmarks, mirrored | Cheek to cheek (234↔454) by forehead to chin. Width matches `DistanceEstimator.faceWidthMetres` (0.145 m, cheek to cheek) well; the box is taller than Vision's near-square rectangle. |
 | `faces[].confidence` | **none** (no per-face score) | 0.9 for every face past the landmarker's 0.5 detection threshold. |
 | `faces[].headPose` | `facialTransformationMatrixes[i]` (4×4, column-major; checked: a clip rotated 15° clockwise reads roll −16°) | The rotation is in MediaPipe's OpenGL camera (x right on the unmirrored image, y up, z toward the viewer; the face looks along +z). Mapped with `R' = S·R·S`, `S = diag(mirrored ? −1 : 1, −1, −1)`, into the viewer-frame camera (x right, y down, z toward the room; the face looks along −z), then decomposed as `EyeContact.rotation` (`Ry(yaw)·Rx(pitch)·Rz(roll)`). That is the `cameraRelative` frame; for `composed` (the default, Vision's) the face-to-lens ray rotation is removed: `R = rayFrame(head)ᵀ·R_camera`, with `head` the ray through the box centre. `headYawSign` / `headPitchSign` and the on-device 3-position frame check still apply downstream. The matrix's translation (a virtual camera) is ignored. |
@@ -42,8 +42,11 @@ upright for the current orientation, so there is no rotation step (Vision needed
 
 ## Camera offset
 
-The browser can't know where its camera is. `startPerception({ cameraOffset })` takes the measured offset (metres from
-the screen centre, x + viewer's right, y + down, in the orientation as mounted; used as is). Without it the default is
+The browser can't know where its camera is. The calibration flow's manual override is **measured** with a ruler as
+mounted (lens to the middle between the drawn eyes) and stored, like the Swift app's, in the portrait frame as the
+perception setting `cameraOffsetOverride` (`CameraOffsetTable.toPortrait`), rotated back with `screen.orientation`.
+`startPerception({ cameraOffset })` still takes an explicit offset (current orientation, used as is). Without either the
+default is
 `CameraOffsetTable.unknownIPadOffset`'s rule for a **long-edge camera** (the camera centred on the top edge in
 `landscape-primary`, like the M4 iPads): `−(short side / 2 + 0.01 m)`, with the short side from `screen` CSS pixels at
 132 px per inch (an iPad's points; an 11-inch iPad gives −0.090 m, the table says −0.087), rotated with
@@ -54,11 +57,24 @@ screen (the kiosk draws it full screen), so no face-centre correction.
 
 - No upper-body rectangle and no face score: boxes and confidences are derived (above). The tracker's association costs were
   tuned on Vision's boxes.
-- Field of view and camera position are settings, not measurements: calibrate per tablet (the calibration flow's bias and
-  frame check absorb small errors).
-- No per-landmark confidence for eyes or hands; no exposure-change flag; no thermal state (the tier policy sees pressure
-  nominal and adapts on timings, late frames and the face's dropped frames only).
+- Field of view and camera position are measured by hand in the calibration flow (IPD at a taped mark; a ruler), not read
+  from the device: calibrate per tablet (the bias and frame check absorb small errors).
+- No per-landmark confidence for eyes or hands; no exposure-change flag; no thermal state of its own: the tier policy's
+  pressure is the kiosk resource governor's cap (`setGovernorPressure`, from Compute Pressure / frame-time pressure),
+  besides timings, late frames and the face's dropped frames.
 - The pose landmarker logs "NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI" on 4:3 input
   (MediaPipe's own warning); landmarks looked right on the test clip.
 - MediaPipe runs on the GPU (WebGL2 in the worker) beside the face's WebGPU renderer; the iPad build kept perception off
   the GPU. Watch the face's frame delivery (`frameStats` feeds the tier policy).
+
+## Measurement harness (Swift Perception/PerceptionHarness*, NewSessionSheet, MeasurementPanel, Skeleton*, HarnessOverlays)
+
+| Swift | Web |
+|---|---|
+| `FeatureRecordingStore` on FileManager (Application Support) | the same store over `PersistentFileSystem` (`BrowserRecordingFileSystem.ts`): OPFS with `createWritable`, else IndexedDB (appended pieces + a size row per file), else memory. Listing, sizes and small files cached; `.yfr` chunks loaded only for a viewer / export (`preload`); appends coalesced, flushed every 0.5 s (a crash loses ≤ 0.5 s). `navigator.storage.persist()` asked. |
+| `PerceptionHarnessTaps.offer` on the analysis task | `PerceptionHandle.onFrame` (camera frames: `FrameResult.detections`, stages, the snapshot) → timing monitor, writer, calibration |
+| Export: a zip for the share sheet | a POSIX tar download (`tarDirectory`); the viewer opens a session `.tar` or a v1 `.json` (`untarInto`) |
+| Replay source (`SyntheticScenes.simulatorDemo`) | `ReplaySource`, 15 Hz: the synthetic demo or any stored session (`asPerceptionRecording`), chosen in the Perception panel's People source |
+| `governorPressure` | `setGovernorPressure`, pushed by the kiosk tick |
+| HUD "isolated timing" (camera paused, the last frame re-run) | not ported: the worker closes each frame's bitmap and MediaPipe keeps no copy |
+| Header `platform` "iPad" / "Mac preview", `deviceModel` hw.machine | "web", the user agent |

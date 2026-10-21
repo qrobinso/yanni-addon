@@ -150,6 +150,13 @@ export const CameraOffsetTable = {
       case 'landscapeRight': return { x: o.y, y: -o.x };    // device top on the left
     }
   },
+
+  /// The inverse of `offset`: an offset measured in the current orientation, back in the portrait frame (a quarter
+  /// turn applied three times is its inverse).
+  toPortrait(o: V2, orientation: InterfaceOrientation): V2 {
+    const r = (v: V2) => CameraOffsetTable.offset(v, orientation);
+    return r(r(r(o)));
+  },
 } as const;
 
 /// Where the camera offset came from (status page).

@@ -7,7 +7,10 @@ import type { FaceEngine } from '../../engine/FaceEngine';
 import type { LifeCycleController } from '../../life/LifeCycleController';
 import type { FrameStats } from '../../render/FrameStats';
 import { CameraOffsetTable, type InterfaceOrientation } from '../CameraGeometry';
-import { PerceptionCoordinator, perceptionFace, perceptionLife } from '../PerceptionCoordinator';
+import type { PerceptionRecording } from '../Replay';
+import { ReplaySource } from '../ReplaySource';
+import { SyntheticScenes } from '../SyntheticScenes';
+import { PerceptionCoordinator, perceptionFace, perceptionLife, type PeopleSource } from '../PerceptionCoordinator';
 import { PerceptionSettings } from '../PerceptionSettings';
 import {
   CameraStatus, PerceptionTier, type PerceptionEvent, type PerceptionOutput, type PerceptionSnapshot,
@@ -22,10 +25,10 @@ export interface PerceptionOptions {
   /** A <video> to show the camera in (the demo); otherwise a detached one is made. */
   video?: HTMLVideoElement;
   /** Camera position from the screen centre (metres, x + viewer's right, y + down) in the current orientation, as
-   *  mounted. Default: a tablet's camera centred on the landscape top edge, rotated with `screen.orientation`. */
+   *  mounted. Default: the settings' measured `cameraOffsetOverride` (portrait frame, rotated with
+   *  `screen.orientation`), else a tablet's camera centred on the landscape top edge. The field of view is the
+   *  settings' `horizontalFovDegrees` (measured by the calibration flow). */
   cameraOffset?: V2 | null;
-  /** The camera's horizontal field of view (the browser can't read it). Default 80°. */
-  horizontalFovDegrees?: number;
   gazeFromBlendshapes?: boolean;
   delegate?: Delegate;
   /** Run MediaPipe in a module worker (default) or on the main thread. */
@@ -56,7 +59,16 @@ export interface PerceptionRuntimeStats {
   arrived: number; accepted: number; droppedBusy: number;
   cameraOffset: V2;
   video: { width: number; height: number };
+  /** The people source in use, and the pressure the tier policy saw (the governor's cap included). */
+  source: PeopleSource;
+  pressure: PressureLevel;
+  /** Frames that arrived while one was in flight, over the last policy window. */
+  lateFraction: number;
 }
+
+/** What drives the coordinator: the camera, a recording replayed (null: the synthetic Simulator demo), or nothing
+ *  (the gaze pad). */
+export type PerceptionSourceChoice = { kind: 'camera' } | { kind: 'replay'; recording: PerceptionRecording | null } | { kind: 'simulated' };
 
 export interface PerceptionHandle {
   readonly coordinator: PerceptionCoordinator;
@@ -69,8 +81,12 @@ export interface PerceptionHandle {
   onFrame(cb: (out: PerceptionOutput, r: FrameResult) => void): () => void;
   snapshot(): PerceptionSnapshot;
   stats(): PerceptionRuntimeStats;
-  /** Override the camera offset (current orientation, metres), or null for the default. */
+  /** Override the camera offset (current orientation, metres), or null for the settings' / default one. */
   setCameraOffset(o: V2 | null): void;
+  /** Swap the people source (Swift PerceptionModel.source). */
+  setSource(s: PerceptionSourceChoice): void;
+  /** The kiosk resource governor's pressure cap (worst input wins with the camera's own pressure). */
+  setGovernorPressure(level: number): void;
 }
 
 const now = (): number => performance.now() / 1000;
@@ -154,6 +170,11 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
   let tier = policy.current;
   let cameraStatus: CameraStatus = CameraStatus.stopped;
   let offsetOverride = opts.cameraOffset ?? null;
+  let source: PeopleSource = 'camera';
+  let replay: ReplaySource | null = null;
+  let replayTimer: ReturnType<typeof setInterval> | undefined;
+  let governorPressure: PressureLevel = PressureLevel.nominal, pressure: PressureLevel = PressureLevel.nominal;
+  let lateFraction = 0;
   let offset: V2 = { x: 0, y: 0 };
   let stream: MediaStream | null = null;
   let analyser: (Analyser & { worker: boolean }) | null = null;
@@ -176,7 +197,9 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
 
   // ---- Camera offset (rotated with the orientation unless overridden) ----
   function pushCameraOffset(): void {
-    offset = offsetOverride ?? defaultCameraOffset(screen.width, screen.height, interfaceOrientation(screen.orientation?.type));
+    const orientation = interfaceOrientation(screen.orientation?.type);
+    const measured = coordinator.settings.cameraOffsetOverride;
+    offset = offsetOverride ?? (measured ? CameraOffsetTable.offset(measured, orientation) : defaultCameraOffset(screen.width, screen.height, orientation));
     coordinator.setCameraOffset(offset);
   }
   pushCameraOffset();
@@ -192,6 +215,7 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
       !life.settings.wakeOnMotionAtBedtime;
     if (off === offAtBedtime) return;
     offAtBedtime = off;
+    if (source !== 'camera') return;
     if (off) { stopCamera(); setStatus(CameraStatus.offAtBedtime); } else void startCamera();
   };
   const ourPhase = (c: Parameters<NonNullable<LifeCycleController['onPhaseChange']>>[0]) => { previousPhase?.(c); lifeChanged(); };
@@ -211,7 +235,7 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
   }
 
   async function startCamera(): Promise<void> {
-    if (stopped || offAtBedtime) return;
+    if (stopped || offAtBedtime || source !== 'camera') return;
     stopCamera();
     setStatus(CameraStatus.starting);
     try {
@@ -224,7 +248,7 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
       if (s.kind !== 'denied') scheduleRetry();
       return;
     }
-    if (stopped) { stopCamera(); return; }
+    if (stopped || source !== 'camera') { stopCamera(); return; }
     const track = stream.getVideoTracks()[0];
     track.addEventListener('ended', () => { if (stream?.getVideoTracks()[0] === track) { setStatus(CameraStatus.unavailable('camera disconnected')); scheduleRetry(); } });
     track.addEventListener('mute', () => setStatus(CameraStatus.interrupted('muted')));
@@ -258,7 +282,7 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
     try {
       const bitmap = await createImageBitmap(video);
       const r = await analyser!.analyse({ bitmap, time, index: ++index, commands: coordinator.mailbox.drain() });
-      if (stopped) return;
+      if (stopped || source !== 'camera') return;
       analysisFPS = r.analysisFPS;
       if (r.captureFPS !== captureFPS) {
         captureFPS = r.captureFPS;
@@ -312,9 +336,13 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
     windowFrames = 0;
     const late = winArrived > 0 ? winBusy / winArrived : 0;
     winArrived = 0; winBusy = 0;
+    lateFraction = late;
     if (!stream || paused || !counts) return;
-    // shortcut: no thermal state in the browser (Compute Pressure is Chrome-only): pressure stays nominal.
-    const d = policy.evaluate({ p90Ms: p90, lateFraction: late, displayDropRate: drop, pressure: PressureLevel.nominal,
+    // The browser's own thermal state reaches perception only through the kiosk governor's cap (setGovernorPressure).
+    const level = governorPressure;
+    if (level !== pressure) coordinator.mailbox.post({ kind: 'pressure', level });
+    pressure = level;
+    const d = policy.evaluate({ p90Ms: p90, lateFraction: late, displayDropRate: drop, pressure: level,
       vacant: coordinator.latest.stats.vacant }, t);
     switch (d.kind) {
       case 'change': coordinator.noteTierChange(tier, d.to, d.reason); tier = d.to; break;
@@ -324,12 +352,28 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
     }
   }, TierPolicy.interval * 1000);
 
+  // ---- Replay (Swift startReplay / replayTick): a recording through a fresh processor at 15 Hz, looping ----
+  function stopReplay(): void { clearInterval(replayTimer); replayTimer = undefined; replay = null; }
+  function startReplay(recording: PerceptionRecording | null): void {
+    const rec = recording ?? SyntheticScenes.simulatorDemo.recording();
+    replay = new ReplaySource(rec, coordinator.settings, tier, now());
+    setStatus(CameraStatus.running);
+    replayTimer = setInterval(() => {
+      if (!replay) return;
+      for (const { out, detections } of replay.tick(now(), coordinator.mailbox.drain())) {
+        coordinator.ingest(out, 'replay');
+        const r: FrameResult = { out, detections, stages: {}, totalMs: 0, analysisFPS: 15, captureFPS: 15 };
+        for (const f of frameListeners) f(out, r);
+      }
+    }, 1000 / 15);
+  }
+
   // ---- Start ----
   const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
   void startAnalyser({
     base: new URL(base, location.href).href, delegate: opts.delegate ?? 'GPU', settings: settings.toJSON(),
     cameraOffset: offset, tier, lowMode: life?.cameraMode === 'low', mirrored: true,
-    horizontalFovDegrees: opts.horizontalFovDegrees ?? 80, gazeFromBlendshapes: opts.gazeFromBlendshapes ?? false,
+    gazeFromBlendshapes: opts.gazeFromBlendshapes ?? false,
   }, opts.worker ?? true).then((a) => {
     if (stopped) { a.close(); return; }
     analyser = a;
@@ -347,6 +391,7 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
       stopCamera();
       clearInterval(policyTimer);
       clearTimeout(retry);
+      stopReplay();
       analyser?.close();
       document.removeEventListener('visibilitychange', onVisibility);
       screen.orientation?.removeEventListener('change', onOrientation);
@@ -357,7 +402,9 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
     setSettings(s) {
       const v = s.validated();
       const overrideChanged = v.tierOverride !== coordinator.settings.tierOverride;
+      const offsetChanged = JSON.stringify(v.cameraOffsetOverride) !== JSON.stringify(coordinator.settings.cameraOffsetOverride);
       coordinator.settings = v;
+      if (offsetChanged) pushCameraOffset();
       if (overrideChanged) {
         policy.override = tierFor(v.tierOverride);
         const next = policy.override !== null ? Math.min(policy.override, policy.ceiling) as PerceptionTier : policy.adapted;
@@ -383,9 +430,33 @@ export function startPerception(engine: FaceEngine, life: LifeCycleController | 
         camera: cameraStatus, tier, delegate: analyser?.delegate ?? null, worker: analyser?.worker ?? false,
         analysisFPS: windowFPS, hz: recent.length, stageMs, p90Ms: p90, noFramesFor: gap > 5 ? Math.trunc(gap) : null,
         arrived, accepted, droppedBusy, cameraOffset: offset, video: { width: video.videoWidth, height: video.videoHeight },
+        source, pressure, lateFraction,
       };
     },
     setCameraOffset(o) { offsetOverride = o; pushCameraOffset(); },
+    setSource(choice) {
+      if (stopped) return;
+      stopCamera();
+      stopReplay();
+      clearTimeout(retry);
+      source = choice.kind;
+      coordinator.source = source;
+      if (choice.kind === 'camera') {
+        // The worker's processor outlives a replay, which drained the mailbox meanwhile: re-send the current state.
+        const m = coordinator.mailbox;
+        m.post({ kind: 'settings', settings: coordinator.settings });
+        m.post({ kind: 'cameraOffset', offset: { ...offset } });
+        m.post({ kind: 'tier', tier });
+        m.post({ kind: 'lowMode', on: life?.cameraMode === 'low' });
+        m.post({ kind: 'pressure', level: pressure });
+        void startCamera();
+      }
+      else if (choice.kind === 'replay') startReplay(choice.recording);
+      else setStatus(CameraStatus.stopped);
+    },
+    setGovernorPressure(level) {
+      governorPressure = Math.min(Math.max(Math.trunc(level) || 0, 0), PressureLevel.shutdown) as PressureLevel;
+    },
   };
 }
 

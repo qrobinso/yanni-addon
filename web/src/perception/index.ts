@@ -1,5 +1,6 @@
 // FacePerception public surface (export * from each file).
 export * from './BodyGestures';
+export * from './CalibrationState';
 export * from './CameraGeometry';
 export * from './CaptureClock';
 export * from './CollectScript';
@@ -33,6 +34,7 @@ export * from './PerceptionTypes';
 export * from './PersonFeatureStream';
 export * from './RecordingConsent';
 export * from './Replay';
+export * from './ReplaySource';
 export * from './SyntheticArms';
 export * from './SyntheticScenes';
 export * from './TierPolicy';
