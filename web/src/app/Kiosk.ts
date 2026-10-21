@@ -1,5 +1,6 @@
 // Browser kiosk plumbing: keep the screen on, no zoom / selection / context menu,
 // unlock audio on the first gesture, and the Reduce Motion flag.
+import { installAudioUnlock } from '../voice/playback/VoiceAudioHost';
 
 /** Screen Wake Lock, re-acquired whenever the page becomes visible again (the browser drops it when hidden). */
 export function keepScreenOn(): void {
@@ -18,19 +19,14 @@ export function lockDownGestures(): void {
   document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 }
 
-/** Resumes `ctx` on the first gesture. Shows `hint` only while audio is actually blocked (autoplay not allowed). */
+/** Resumes `ctx` on the first gesture (`installAudioUnlock`). Shows `hint` only while audio is actually blocked
+ *  (autoplay not allowed). */
 export function unlockAudio(ctx: AudioContext, hint: HTMLElement): void {
-  const events = ['pointerdown', 'pointerup', 'keydown'];
-  const gesture = () => { ctx.resume().catch(() => {}); };
+  installAudioUnlock(ctx);
+  ctx.resume().catch(() => {});
   let checked = false;
-  const update = () => {
-    const ok = ctx.state === 'running' || ctx.state === 'closed';
-    if (ok) for (const t of events) removeEventListener(t, gesture, true);
-    if (checked) hint.hidden = ok;
-  };
+  const update = () => { if (checked) hint.hidden = ctx.state === 'running' || ctx.state === 'closed'; };
   ctx.addEventListener('statechange', update);
-  for (const t of events) addEventListener(t, gesture, true);
-  gesture();
   // A kiosk browser that allows autoplay is running by now: the hint never shows there.
   setTimeout(() => { checked = true; update(); }, 1000);
 }
@@ -41,9 +37,3 @@ export const motion = {
   get reduce(): boolean { return this.query?.matches ?? false; },
   onChange(fn: (reduce: boolean) => void): void { this.query?.addEventListener('change', (e) => fn(e.matches)); },
 };
-
-/** The face's live description for screen readers (the canvas is one `img` element named "Yanni"). */
-export function describeFace(text: string): void {
-  const d = document.getElementById('face-desc');
-  if (d && d.textContent !== text) d.textContent = text;
-}

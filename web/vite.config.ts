@@ -15,6 +15,7 @@ export default defineConfig({
         'turn-demo': resolve(import.meta.dirname, 'turn-demo.html'),
         'perception-demo': resolve(import.meta.dirname, 'perception-demo.html'),
         'voice-demo': resolve(import.meta.dirname, 'voice-demo.html'),
+        tuning: resolve(import.meta.dirname, 'tuning.html'),
       },
     },
   },
