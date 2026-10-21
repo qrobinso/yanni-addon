@@ -2,12 +2,16 @@
 // against the ONNX reference outputs in expected.json.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import * as ort from 'onnxruntime-web';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { ModelCatalog } from '../../src/conversation/turnml/ModelCatalog';
 import { SileroVADModel } from '../../src/conversation/turnml/SileroVADModel';
 import { clipSamples, loadClips, modelPath, modelsPresent, onsetEnd } from './support/ClipSupport';
 
 const clips = loadClips().clips;
+
+// Single-threaded in node: ort's idle wasm threads spin, and on a 4-core CI runner they starve Vitest's worker RPC.
+ort.env.wasm.numThreads = 1;
 
 describe.skipIf(!modelsPresent)('Silero VAD on onnxruntime-web (run web/scripts/fetch-models.mjs first)', () => {
   let vad: SileroVADModel;

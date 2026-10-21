@@ -1,12 +1,16 @@
 // Port of ConversationTurnMLTests/SmartTurnModelTests.swift: our Whisper front end + the fp32 ONNX on onnxruntime-web
 // (wasm in node) against the reference (WhisperFeatureExtractor + onnxruntime fp32) in expected.json.
 import { readFileSync } from 'node:fs';
+import * as ort from 'onnxruntime-web';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { TurnAudioWindow } from '../../src/conversation/turn';
 import { SmartTurnModel } from '../../src/conversation/turnml/SmartTurnModel';
 import { clipSamples, clipWindow, loadClips, modelPath, modelsPresent } from './support/ClipSupport';
 
 const clips = loadClips().clips;
+
+// Single-threaded in node: ort's idle wasm threads spin, and on a 4-core CI runner they starve Vitest's worker RPC.
+ort.env.wasm.numThreads = 1;
 
 describe.skipIf(!modelsPresent)('Smart Turn on onnxruntime-web (run web/scripts/fetch-models.mjs first)', () => {
   let model: SmartTurnModel;
