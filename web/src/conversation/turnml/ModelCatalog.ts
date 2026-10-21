@@ -51,6 +51,9 @@ export function configureRuntime(): void {
   ort.env.logLevel = 'error'; // node-to-EP assignment notices are expected (shape ops stay on the CPU)
   if (typeof window !== 'undefined' || typeof WorkerGlobalScope !== 'undefined') {
     ort.env.wasm.wasmPaths = `${new URL(`${baseURL()}ort/`, self.location.href)}`;
+    // Left unset, each runtime takes up to 4 threads that spin between inferences (heat on a 24/7 tablet). The page
+    // runs only the tiny Silero VAD; the Smart Turn worker gets 2.
+    ort.env.wasm.numThreads = typeof document === 'undefined' ? 2 : 1;
   }
 }
 

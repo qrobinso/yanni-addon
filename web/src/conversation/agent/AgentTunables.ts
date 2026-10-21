@@ -79,7 +79,12 @@ export function childController(parent?: AbortSignal): AbortController {
   const c = new AbortController();
   if (parent) {
     if (parent.aborted) c.abort();
-    else parent.addEventListener('abort', () => c.abort(), { once: true });
+    else {
+      const on = () => c.abort();
+      parent.addEventListener('abort', on, { once: true });
+      // A long-lived parent (the HA ping's, for weeks) must not keep every finished child.
+      c.signal.addEventListener('abort', () => parent.removeEventListener('abort', on), { once: true });
+    }
   }
   return c;
 }

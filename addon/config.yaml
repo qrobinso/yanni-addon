@@ -1,6 +1,6 @@
 # https://contributors.home-assistant.io/apps/reference/configuration/
 name: Yanni
-version: "0.1.0"
+version: "0.1.1"
 slug: yanni
 description: A friendly face for a wall tablet that sees, listens and talks through Home Assistant.
 url: "https://github.com/qrobinso/yanni-addon"

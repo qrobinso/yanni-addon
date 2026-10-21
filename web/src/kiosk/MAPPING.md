@@ -40,7 +40,7 @@ Only the platform signals change. Each mapping is listed below.
 | Metal GPU family (chip floor) | `GPUDevice.adapterInfo` (vendor, architecture), for the summary only | It doesn't identify the chip. |
 | `ProvisioningProfile`, signature expiry, `OpenDecisions` (bundle ID, distribution path) | **dropped** | A web page has no signing profile or bundle ID. The HA `signature_expires` sensor is already absent (server/src/entities.ts). |
 | `MetricsCollector` (MetricKit) | **dropped** | No browser API for crash, hang or power reports. LaunchGuard and the ring log never depended on it. |
-| `DiagnosticsLog` (2 MB × 5 JSONL files) | localStorage keys `yanni.diag.log-0…3`, 256 KB each | localStorage holds about 5 MB per origin, shared with settings. A quota error drops the oldest file and never throws. |
+| `DiagnosticsLog` (2 MB × 5 JSONL files) | localStorage keys `yanni.diag.log-0…15`, 64 K characters each, flushed every 30 s | localStorage holds about 5 MB per origin, shared with settings. A quota error drops the oldest file and never throws. |
 | Diagnostics export (a folder zipped for the share sheet) | One JSON bundle (`yanni-diagnostics-<time>.json`) offered as a download | No zip without a dependency. Every part is scanned for forbidden keys and dropped if one is found, then the whole bundle is scanned again and refused if it still trips. |
 | `ResumeSnapshot` file | localStorage `yanni.kiosk.resume` | main.ts keeps its own `RESUME_KEY` today: KioskBoot can replace it. |
 | `SoakLogger` (`-YanniSoak`, a JSONL file) | `?soak`, localStorage `yanni.kiosk.soak` (400 lines max, header kept), included in the export | |

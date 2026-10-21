@@ -24,6 +24,8 @@ export interface DetectorOptions {
   /** Where the tasks-vision wasm files and the .task models are served (same origin), ending in '/'. */
   base: string;
   delegate: Delegate;
+  /** Run the blendshape model (only `gazeFromBlendshapes` reads it; off saves it on every face, every frame). */
+  blendshapes: boolean;
 }
 
 /** One analysed frame's inputs. */
@@ -65,7 +67,7 @@ export class MediaPipeDetector {
       const base = (file: string) => ({ modelAssetPath: `${o.base}models/${file}`, delegate });
       const [face, hands, pose] = await Promise.all([
         FaceLandmarker.createFromOptions(fileset, { baseOptions: base('face_landmarker.task'), runningMode: 'VIDEO',
-          numFaces: 2, outputFaceBlendshapes: true, outputFacialTransformationMatrixes: true }),
+          numFaces: 2, outputFaceBlendshapes: o.blendshapes, outputFacialTransformationMatrixes: true }),
         HandLandmarker.createFromOptions(fileset, { baseOptions: base('hand_landmarker.task'), runningMode: 'VIDEO', numHands: 2 }),
         PoseLandmarker.createFromOptions(fileset, { baseOptions: base('pose_landmarker_lite.task'), runningMode: 'VIDEO', numPoses: 2 }),
       ]);

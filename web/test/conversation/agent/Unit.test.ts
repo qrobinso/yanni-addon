@@ -3,6 +3,7 @@
 // (no Wyoming; the display reaches HA only through the add-on relay, with no URL of its own).
 import { describe, expect, test } from 'vitest';
 import { makeAgentTunables } from '../../../src/conversation/core/VoiceServicesEndpoint';
+import { childController } from '../../../src/conversation/agent/AgentTunables';
 import { makeProactiveItem } from '../../../src/conversation/events/AgentIntents';
 import { AddressPolicy, StaticHostResolver } from '../../../src/conversation/agent/AddressPolicy';
 import { DecisionAnswerMapping, DecisionQuestions } from '../../../src/conversation/agent/DecisionQuestions';
@@ -223,5 +224,20 @@ describe('ProactivePhraserTests', () => {
   test('contextSensorText', () => {
     const s = makeConversationContextSnapshot({ feel: 'Happiness', moodLabel: 'playful', peopleCount: 2, quietMode: true });
     expect(sensorState(s)).toBe('Yanni feels happiness, mood lately playful; 2 people here; quiet mode on');
+  });
+});
+
+describe('childController', () => {
+  test('a finished child lets go of its long-lived parent', () => {
+    const parent = new AbortController();
+    const added: unknown[] = [], removed: unknown[] = [];
+    const add = parent.signal.addEventListener.bind(parent.signal), rm = parent.signal.removeEventListener.bind(parent.signal);
+    parent.signal.addEventListener = ((t: string, fn: EventListener, o?: AddEventListenerOptions) => { added.push(fn); add(t, fn, o); }) as typeof add;
+    parent.signal.removeEventListener = ((t: string, fn: EventListener) => { removed.push(fn); rm(t, fn); }) as typeof rm;
+    for (let i = 0; i < 3; i++) childController(parent.signal).abort();
+    expect(removed).toEqual(added);
+    const live = childController(parent.signal);
+    parent.abort();
+    expect(live.signal.aborted).toBe(true);
   });
 });

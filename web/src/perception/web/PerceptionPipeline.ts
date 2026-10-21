@@ -47,7 +47,7 @@ export class PerceptionPipeline {
   private constructor(readonly detector: MediaPipeDetector, private processor: PerceptionProcessor, private readonly init: PipelineInit) {}
 
   static async create(init: PipelineInit): Promise<PerceptionPipeline> {
-    const detector = await MediaPipeDetector.create({ base: init.base, delegate: init.delegate });
+    const detector = await MediaPipeDetector.create({ base: init.base, delegate: init.delegate, blendshapes: init.gazeFromBlendshapes });
     const processor = new PerceptionProcessor(PerceptionSettings.decode(init.settings), new CameraGeometry(undefined, init.cameraOffset), init.tier);
     processor.apply([{ kind: 'lowMode', on: init.lowMode }]);
     return new PerceptionPipeline(detector, processor, init);

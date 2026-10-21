@@ -451,6 +451,8 @@ fn eyeSample(e: EyeU, px: vec2f) -> vec4f {
   let p = vec2f(delta.x * c - delta.y * s, delta.x * s + delta.y * c) * f.viewport.w;
 
   let dShape = sdEgg(p, e.box.xy, e.radiiTop, e.radiiBottom, e.accent.x, 1.0);
+  // dVis below is never under dShape (max and smaxPoly ≥ max), so these pixels have zero coverage: skip the lids.
+  if (0.5 - dShape * f.viewport.z <= 0.0) { return vec4f(0.0); }
   // Lids at the nearest box point: their distances are only meaningful inside the box.
   var bp = p;
   if (dShape > 0.0) { bp = eggBoxPoint(p, e.box.xy, e.radiiTop, e.radiiBottom, e.accent.x); }

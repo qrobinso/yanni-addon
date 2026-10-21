@@ -305,7 +305,9 @@ new ResizeObserver(([e]) => {
 // ---- Perception: the camera, people → the face, reflex impulses → feeling, gestures → Home Assistant ----
 function startPerceptionNow(): void {
   perception?.stop();
-  const p = startPerception(engine, life, { frameStats: clock.stats, settings: perceptionSettings(hub.settings) });
+  // The device's tier is the ceiling (Swift `HardwareClass.startingTier`), not full on every tablet.
+  const p = startPerception(engine, life, { frameStats: clock.stats, settings: perceptionSettings(hub.settings),
+    tierCeiling: PerceptionTier[boot.defaults.tierHint] });
   perception = p;
   ctx.perception = p;
   harness.attach(p, { frameStats: clock.stats, faceSize: () => faceSize, appBuild: APP_VERSION });

@@ -11,10 +11,11 @@ import type { KeyValue } from '../app/OwnerAccess';
 export interface LogLine { t: string; c: string; m: string }
 
 export class DiagnosticsLog {
-  /// port-note: the Swift files are 2 MB × 5; localStorage holds ~5 MB per origin, shared with settings.
-  static readonly defaultFileLimit = 256 * 1024;
-  static readonly defaultFileCount = 4;
-  static readonly flushInterval = 5;
+  /// port-note: the Swift files are 2 MB × 5; localStorage holds ~5 MB per origin, shared with settings. Small files
+  /// and a slow flush because every flush rewrites all of `log-0` synchronously (flash wear on a 24/7 kiosk).
+  static readonly defaultFileLimit = 64 * 1024;
+  static readonly defaultFileCount = 16;
+  static readonly flushInterval = 30;
   /// Longest message kept (a log line is never a transcript).
   static readonly maxMessage = 300;
   static readonly prefix = 'yanni.diag.log-';
@@ -22,6 +23,8 @@ export class DiagnosticsLog {
   readonly fileLimit: number;
   readonly fileCount: number;
   private pending: LogLine[] = [];
+  /// `log-0` as last written (null until the first flush reads it): this page is its only writer.
+  private head: string | null = null;
   private timer: ReturnType<typeof setInterval> | undefined;
 
   constructor(private readonly store: KeyValue, fileLimit = DiagnosticsLog.defaultFileLimit,
@@ -54,15 +57,15 @@ export class DiagnosticsLog {
     if (!this.pending.length) return;
     const data = this.pending.map((l) => JSON.stringify(l) + '\n').join('');
     this.pending.length = 0;
-    const current = this.store.getItem(this.file(0)) ?? '';
-    if (current.length > 0 && current.length + data.length > this.fileLimit) this.rotate();
-    const base = this.store.getItem(this.file(0)) ?? '';
+    let base = this.head ?? this.store.getItem(this.file(0)) ?? '';
+    if (base.length > 0 && base.length + data.length > this.fileLimit) { this.rotate(); base = ''; }
     try {
       this.store.setItem(this.file(0), base + data);
+      this.head = base + data;
     } catch {
       // Quota: drop the oldest file and retry once.
       this.rotate();
-      try { this.store.setItem(this.file(0), data); } catch { /* full: the batch is lost, never the page */ }
+      try { this.store.setItem(this.file(0), data); this.head = data; } catch { this.head = ''; /* full: the batch is lost, never the page */ }
     }
   }
 

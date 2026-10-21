@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Fix: the add-on failed to start ("SyntaxError" in /run.sh) because the image ran the start script with node.
+
 ## 0.1.0
 
 - Prebuilt images: GitHub Actions builds amd64 and aarch64 images and Home Assistant pulls them from GHCR.

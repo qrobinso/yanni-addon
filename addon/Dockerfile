@@ -12,7 +12,8 @@ ENV NODE_ENV=production \
     SSL_DIR=/ssl
 
 # init: true (the default) gives the container an init process, so SIGTERM reaches node.
-CMD ["/run.sh"]
+# Through sh: the release workflow's artifact hop drops run.sh's exec bit, and node's entrypoint would then run it as JS.
+CMD ["sh", "/run.sh"]
 
 LABEL \
     io.hass.type="app" \

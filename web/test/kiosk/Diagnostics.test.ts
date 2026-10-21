@@ -32,6 +32,19 @@ describe('DiagnosticsLog', () => {
     expect(lines[0].m.startsWith('line 0 ')).toBe(false);                    // oldest dropped
   });
 
+  test('a flush after the first never reads the store back', () => {
+    const s = memoryStore();
+    let reads = 0;
+    const log = new DiagnosticsLog({ ...s, getItem: (k: string) => { reads++; return s.getItem(k); } });
+    log.add('app', 'one');
+    log.flush();
+    reads = 0;
+    log.add('app', 'two');
+    log.flush();
+    expect(reads).toBe(0);
+    expect(log.readAll().map((l) => l.m)).toEqual(['one', 'two']);
+  });
+
   test('long messages are truncated', () => {
     const log = new DiagnosticsLog(memoryStore());
     log.add('app', 'a'.repeat(5000));
