@@ -98,10 +98,16 @@ A tablet is unavailable while it is not connected, and every tablet is unavailab
 The add-on folder is the Docker build context and holds no sources. `scripts/stage-addon.sh` builds the web app,
 bundles the server into one ESM file with its dependencies (`npm run bundle -w server`, esbuild) and copies both into
 `addon/rootfs/app`. It runs `web/scripts/fetch-models.mjs` first (SHA-256 pinned; downloads only what is missing)
-and fails if a model or wasm runtime did not make it into the stage. Run it before a release and commit what it
-stages: Home Assistant builds the image on the device from this repository, so the models must be in it. Everything
+and fails if a model or wasm runtime did not make it into the stage. The stage is gitignored: Home Assistant pulls
+prebuilt images (`image: ghcr.io/qrobinso/{arch}-addon-yanni` in `config.yaml`, tagged with `version`). Everything
 staged is plain JavaScript, so one `node:24-alpine` Dockerfile serves aarch64 and amd64.
 `SMOKE_STAGED=1 npm run smoke -w web` runs the kiosk smoke against the staged app.
+
+Releasing: bump `version` in `config.yaml` and `CHANGELOG.md`, commit, then push a matching tag (`git tag v0.1.1 &&
+git push --tags`). `.github/workflows/release.yml` checks the tag matches, runs the tests, stages, and pushes the
+amd64 and aarch64 images to GHCR. The GHCR packages must be public so Home Assistant can pull them without a login
+(set once per package under GitHub → Packages → Package settings). `.github/workflows/ci.yml` runs the tests, both
+typechecks and the build on every push and pull request.
 
 Run the server against a real Home Assistant from the repo:
 

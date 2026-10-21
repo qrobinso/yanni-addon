@@ -18,8 +18,10 @@ The product spec, which describes every behaviour, is `../yanni/docs/spec.md`. R
 ```
 repository.yaml        HA add-on repository manifest
 addon/                 the add-on: config.yaml, Dockerfile, rootfs/run.sh, DOCS.md, CHANGELOG.md
-scripts/stage-addon.sh fetches the models, builds web + server and stages them into addon/rootfs/app (run before a
-                       release; the stage is committed: HA builds the image on the device and the display is offline)
+scripts/stage-addon.sh fetches the models, builds web + server and stages them into addon/rootfs/app (gitignored; the
+                       image's build context: the display is offline, so models ship inside the image)
+.github/workflows/     ci.yml (tests, typechecks, build on push/PR); release.yml (tag v<version> matching
+                       addon/config.yaml → stage → amd64 + aarch64 images to ghcr.io/qrobinso/{arch}-addon-yanni)
 server/                Node 24 add-on server (npm workspace @yanni/server)
   src/protocol.ts        display ⇄ add-on WebSocket protocol (imported by web as @yanni/server/protocol)
   src/settingsSchema.ts  every setting: type, default, range, HA exposure (@yanni/server/settings)

@@ -2,6 +2,8 @@
 
 ## 0.1.0
 
+- Prebuilt images: GitHub Actions builds amd64 and aarch64 images and Home Assistant pulls them from GHCR.
+
 First release.
 
 - **The face in the browser.** Yanni's eyes render with WebGPU on the wall tablet, with the iPad app's motion:

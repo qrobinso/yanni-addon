@@ -1,0 +1,34 @@
+# Tests, typecheck and build on every push and pull request.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Models + wasm runtimes (sha256-pinned in the script); cached so the turn-model parity tests run every time.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            web/public/models
+            web/public/ort
+            web/public/mediapipe
+          key: models-${{ hashFiles('web/scripts/fetch-models.mjs', 'package-lock.json') }}
+      - run: node web/scripts/fetch-models.mjs
+      - run: npm run typecheck -w web
+      - run: npm run typecheck -w server
+      - run: npm test
+      - run: npm run build

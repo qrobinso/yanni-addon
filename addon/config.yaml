@@ -4,6 +4,8 @@ version: "0.1.0"
 slug: yanni
 description: A friendly face for a wall tablet that sees, listens and talks through Home Assistant.
 url: "https://github.com/qrobinso/yanni-addon"
+# Prebuilt by .github/workflows/release.yml; Home Assistant pulls the tag matching `version`.
+image: "ghcr.io/qrobinso/{arch}-addon-yanni"
 arch:
   - aarch64
   - amd64

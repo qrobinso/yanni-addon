@@ -1,7 +1,7 @@
 #!/bin/sh
-# Builds the web app and the server, then stages them into addon/rootfs/app (the add-on's Docker build context
-# holds no sources). Run before tagging a release; commit addon/rootfs/app with it: HA builds the image on the device
-# from the git repo, and the display must work offline, so the models and wasm runtimes ship inside it.
+# Builds the web app and the server, then stages them into addon/rootfs/app, the add-on image's build context
+# (gitignored). The release workflow runs it before building the images; run it locally to test the image. The
+# display must work offline, so the models and wasm runtimes ship inside the image.
 set -eu
 cd "$(dirname "$0")/.."
 out=addon/rootfs/app

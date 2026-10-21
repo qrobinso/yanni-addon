@@ -1,6 +1,6 @@
-# The add-on folder is the build context (HA builds it on the device). It holds no sources: run
-# scripts/stage-addon.sh first, which bundles the server (one ESM file, deps included) and copies the built web app
-# into rootfs/app. Everything staged is plain JavaScript, so the same image works on aarch64 and amd64.
+# Built by .github/workflows/release.yml (one image per arch, pushed to GHCR; config.yaml `image:`). The build
+# context is this folder after scripts/stage-addon.sh has staged the bundled server, the web app and the models into
+# rootfs/app (gitignored). Everything staged is plain JavaScript, so the same steps serve aarch64 and amd64.
 FROM node:24-alpine
 
 COPY rootfs /
